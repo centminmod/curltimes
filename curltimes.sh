@@ -1,0 +1,203 @@
+#!/bin/bash
+############################################################
+# https://nooshu.github.io/blog/2020/07/30/measuring-tls-13-ipv4-ipv6-performance/
+############################################################
+total=3
+bin='/usr/bin/curl'
+datalog='/tmp/curltimes.txt'
+############################################################
+
+if [[ -f /usr/bin/yum && ! -f /usr/bin/datamash ]]; then
+  yum -y -q install datamash >/dev/null 2>&1
+fi
+if [[ -f /usr/bin/apt-get && ! -f /usr/bin/datamash ]]; then
+  apt-get -y -q install datamash >/dev/null 2>&1
+  fi
+if [ -f /usr/local/http2-15/bin/curl ]; then
+  bin='/usr/local/http2-15/bin/curl'
+fi
+if [[ "$bin" = '/usr/local/http2-15/bin/curl' || -d /usr/local/http2-15/lib ]]; then
+  export LD_LIBRARY_PATH='/usr/local/http2-15/lib'
+fi
+
+curl_format='{
+        "time_dns":             %{time_namelookup},
+        "time_connect":         %{time_connect},
+        "time_appconnect":      %{time_appconnect},
+        "time_pretransfer":     %{time_pretransfer},
+        "time_ttfb":            %{time_starttransfer},
+        "time_total":           %{time_total}
+}'
+
+header() {
+  echo '["DNS","Connect","SSL","Wait","TTFB","Total Time"]'
+}
+
+processlog() {
+  display=$1
+  time_dns=$(cat $datalog | awk -F ',' '{print $1}' | datamash -t, --no-strict --filler 0 mean 1)
+  time_dns=$(printf "%.6f\n" $time_dns)
+  time_connect=$(cat $datalog | awk -F ',' '{print $2}' | datamash -t, --no-strict --filler 0 mean 1)
+  time_connect=$(printf "%.6f\n" $time_connect)
+  time_appconnect=$(cat $datalog | awk -F ',' '{print $3}' | datamash -t, --no-strict --filler 0 mean 1)
+  time_appconnect=$(printf "%.6f\n" $time_appconnect)
+  time_pretransfer=$(cat $datalog | awk -F ',' '{print $4}' | datamash -t, --no-strict --filler 0 mean 1)
+  time_pretransfer=$(printf "%.6f\n" $time_pretransfer)
+  time_ttfb=$(cat $datalog | awk -F ',' '{print $5}' | datamash -t, --no-strict --filler 0 mean 1)
+  time_ttfb=$(printf "%.6f\n" $time_ttfb)
+  time_total=$(cat $datalog | awk -F ',' '{print $6}' | datamash -t, --no-strict --filler 0 mean 1)
+  time_total=$(printf "%.6f\n" $time_total)
+
+  time_dns_min=$(cat $datalog | awk -F ',' '{print $1}' | datamash -t, --no-strict --filler 0 min 1)
+  time_dns_min=$(printf "%.6f\n" $time_dns_min)
+  time_connect_min=$(cat $datalog | awk -F ',' '{print $2}' | datamash -t, --no-strict --filler 0 min 1)
+  time_connect_min=$(printf "%.6f\n" $time_connect_min)
+  time_appconnect_min=$(cat $datalog | awk -F ',' '{print $3}' | datamash -t, --no-strict --filler 0 min 1)
+  time_appconnect_min=$(printf "%.6f\n" $time_appconnect_min)
+  time_pretransfer_min=$(cat $datalog | awk -F ',' '{print $4}' | datamash -t, --no-strict --filler 0 min 1)
+  time_pretransfer_min=$(printf "%.6f\n" $time_pretransfer_min)
+  time_ttfb_min=$(cat $datalog | awk -F ',' '{print $5}' | datamash -t, --no-strict --filler 0 min 1)
+  time_ttfb_min=$(printf "%.6f\n" $time_ttfb_min)
+  time_total_min=$(cat $datalog | awk -F ',' '{print $6}' | datamash -t, --no-strict --filler 0 min 1)
+  time_total_min=$(printf "%.6f\n" $time_total_min)
+
+  time_dns_max=$(cat $datalog | awk -F ',' '{print $1}' | datamash -t, --no-strict --filler 0 max 1)
+  time_dns_max=$(printf "%.6f\n" $time_dns_max)
+  time_connect_max=$(cat $datalog | awk -F ',' '{print $2}' | datamash -t, --no-strict --filler 0 max 1)
+  time_connect_max=$(printf "%.6f\n" $time_connect_max)
+  time_appconnect_max=$(cat $datalog | awk -F ',' '{print $3}' | datamash -t, --no-strict --filler 0 max 1)
+  time_appconnect_max=$(printf "%.6f\n" $time_appconnect_max)
+  time_pretransfer_max=$(cat $datalog | awk -F ',' '{print $4}' | datamash -t, --no-strict --filler 0 max 1)
+  time_pretransfer_max=$(printf "%.6f\n" $time_pretransfer_max)
+  time_ttfb_max=$(cat $datalog | awk -F ',' '{print $5}' | datamash -t, --no-strict --filler 0 max 1)
+  time_ttfb_max=$(printf "%.6f\n" $time_ttfb_max)
+  time_total_max=$(cat $datalog | awk -F ',' '{print $6}' | datamash -t, --no-strict --filler 0 max 1)
+  time_total_max=$(printf "%.6f\n" $time_total_max)
+
+  time_dns_75=$(cat $datalog | awk -F ',' '{print $1}' | datamash -t, --no-strict --filler 0 perc:75 1)
+  time_dns_75=$(printf "%.6f\n" $time_dns_75)
+  time_connect_75=$(cat $datalog | awk -F ',' '{print $2}' | datamash -t, --no-strict --filler 0 perc:75 1)
+  time_connect_75=$(printf "%.6f\n" $time_connect_75)
+  time_appconnect_75=$(cat $datalog | awk -F ',' '{print $3}' | datamash -t, --no-strict --filler 0 perc:75 1)
+  time_appconnect_75=$(printf "%.6f\n" $time_appconnect_75)
+  time_pretransfer_75=$(cat $datalog | awk -F ',' '{print $4}' | datamash -t, --no-strict --filler 0 perc:75 1)
+  time_pretransfer_75=$(printf "%.6f\n" $time_pretransfer_75)
+  time_ttfb_75=$(cat $datalog | awk -F ',' '{print $5}' | datamash -t, --no-strict --filler 0 perc:75 1)
+  time_ttfb_75=$(printf "%.6f\n" $time_ttfb_75)
+  time_total_75=$(cat $datalog | awk -F ',' '{print $6}' | datamash -t, --no-strict --filler 0 perc:75 1)
+  time_total_75=$(printf "%.6f\n" $time_total_75)
+
+  time_dns_95=$(cat $datalog | awk -F ',' '{print $1}' | datamash -t, --no-strict --filler 0 perc:95 1)
+  time_dns_95=$(printf "%.6f\n" $time_dns_95)
+  time_connect_95=$(cat $datalog | awk -F ',' '{print $2}' | datamash -t, --no-strict --filler 0 perc:95 1)
+  time_connect_95=$(printf "%.6f\n" $time_connect_95)
+  time_appconnect_95=$(cat $datalog | awk -F ',' '{print $3}' | datamash -t, --no-strict --filler 0 perc:95 1)
+  time_appconnect_95=$(printf "%.6f\n" $time_appconnect_95)
+  time_pretransfer_95=$(cat $datalog | awk -F ',' '{print $4}' | datamash -t, --no-strict --filler 0 perc:95 1)
+  time_pretransfer_95=$(printf "%.6f\n" $time_pretransfer_95)
+  time_ttfb_95=$(cat $datalog | awk -F ',' '{print $5}' | datamash -t, --no-strict --filler 0 perc:95 1)
+  time_ttfb_95=$(printf "%.6f\n" $time_ttfb_95)
+  time_total_95=$(cat $datalog | awk -F ',' '{print $6}' | datamash -t, --no-strict --filler 0 perc:95 1)
+  time_total_95=$(printf "%.6f\n" $time_total_95)
+
+  time_dns_99=$(cat $datalog | awk -F ',' '{print $1}' | datamash -t, --no-strict --filler 0 perc:99 1)
+  time_dns_99=$(printf "%.6f\n" $time_dns_99)
+  time_connect_99=$(cat $datalog | awk -F ',' '{print $2}' | datamash -t, --no-strict --filler 0 perc:99 1)
+  time_connect_99=$(printf "%.6f\n" $time_connect_99)
+  time_appconnect_99=$(cat $datalog | awk -F ',' '{print $3}' | datamash -t, --no-strict --filler 0 perc:99 1)
+  time_appconnect_99=$(printf "%.6f\n" $time_appconnect_99)
+  time_pretransfer_99=$(cat $datalog | awk -F ',' '{print $4}' | datamash -t, --no-strict --filler 0 perc:99 1)
+  time_pretransfer_99=$(printf "%.6f\n" $time_pretransfer_99)
+  time_ttfb_99=$(cat $datalog | awk -F ',' '{print $5}' | datamash -t, --no-strict --filler 0 perc:99 1)
+  time_ttfb_99=$(printf "%.6f\n" $time_ttfb_99)
+  time_total_99=$(cat $datalog | awk -F ',' '{print $6}' | datamash -t, --no-strict --filler 0 perc:99 1)
+  time_total_99=$(printf "%.6f\n" $time_total_99)
+
+  if [[ "$display" = [yY] ]]; then
+    echo
+    echo -e "time_dns \n  avg: $time_dns \n  75% $time_dns_75 \n  95% $time_dns_95 \n  99% $time_dns_99"
+    echo -e "time_connect \n  avg: $time_connect \n  75% $time_connect_75 \n  95% $time_connect_95 \n  99% $time_connect_99"
+    echo -e "time_appconnect \n  avg: $time_appconnect \n  75% $time_appconnect_75 \n  95% $time_appconnect_95 \n  99% $time_appconnect_99"
+    echo -e "time_pretransfer \n  avg: $time_pretransfer \n  75% $time_pretransfer_75 \n  95% $time_pretransfer_95 \n  99% $time_pretransfer_99"
+    echo -e "time_ttfb \n  avg: $time_ttfb \n  75% $time_ttfb_75 \n  95% $time_ttfb_95 \n  99% $time_ttfb_99"
+    echo -e "time_total \n  avg: $time_total \n  75% $time_total_75 \n  95% $time_total_95 \n  99% $time_total_99"
+  fi
+}
+
+curlrun() {
+  mode=$1
+  url=$2
+  tls=$3
+  tlsmax="--tls-max $tls"
+  # used as headers for the CSV file
+  if [[ "$mode" = 'csv-sum' ]]; then
+    for ((n=0;n<total;n++))
+    do
+      $bin -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax
+      sleep 0.3 #space the timings out slightly
+    done | jq -r '[.[]] | @csv' | tee "$datalog"
+    processlog y
+  elif [[ "$mode" = 'csv-max-sum' ]]; then
+    for ((n=0;n<total;n++))
+    do
+      $bin -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax
+      sleep 0.3 #space the timings out slightly
+    done | jq -r '[.[]] | @csv' | tee "$datalog"
+    processlog y
+  elif [[ "$mode" = 'csv' ]]; then
+    header
+    for ((n=0;n<total;n++))
+    do
+      $bin -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax
+      sleep 0.3 #space the timings out slightly
+    done | jq -r '[.[]] | @csv' | tee "$datalog"
+    processlog
+  else
+    header
+    for ((n=0;n<total;n++))
+    do
+      $bin -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax
+      sleep 0.3 #space the timings out slightly
+    done | tee "$datalog"
+  fi
+}
+
+help() {
+  echo "Usage:"
+  echo
+  echo "TLS 1.2 max tests"
+  echo "$0 json https://domain.com"
+  echo "$0 csv https://domain.com"
+  echo
+  echo "TLS 1.3 max tests"
+  echo "$0 json-max https://domain.com"
+  echo "$0 csv-max https://domain.com"
+  echo
+  echo "CSV Summary"
+  echo "$0 csv-sum https://domain.com"
+  echo "$0 csv-max-sum https://domain.com"
+}
+
+case "$1" in
+  json )
+    curlrun json "$2" 1.2
+    ;;
+  csv )
+    curlrun csv "$2" 1.2
+    ;;
+  json-max )
+    curlrun json "$2" 1.3
+    ;;
+  csv-max )
+    curlrun csv "$2" 1.3
+    ;;
+  csv-sum )
+    curlrun csv-sum "$2" 1.2
+    ;;
+  csv-max-sum )
+    curlrun csv-max-sum "$2" 1.3
+    ;;
+  *)
+    help
+    ;;
+esac
