@@ -115,12 +115,12 @@ processlog() {
 
   if [[ "$display" = [yY] ]]; then
     echo
-    echo -e "time_dns \n  avg: $time_dns \n  75% $time_dns_75 \n  95% $time_dns_95 \n  99% $time_dns_99"
-    echo -e "time_connect \n  avg: $time_connect \n  75% $time_connect_75 \n  95% $time_connect_95 \n  99% $time_connect_99"
-    echo -e "time_appconnect \n  avg: $time_appconnect \n  75% $time_appconnect_75 \n  95% $time_appconnect_95 \n  99% $time_appconnect_99"
-    echo -e "time_pretransfer \n  avg: $time_pretransfer \n  75% $time_pretransfer_75 \n  95% $time_pretransfer_95 \n  99% $time_pretransfer_99"
-    echo -e "time_ttfb \n  avg: $time_ttfb \n  75% $time_ttfb_75 \n  95% $time_ttfb_95 \n  99% $time_ttfb_99"
-    echo -e "time_total \n  avg: $time_total \n  75% $time_total_75 \n  95% $time_total_95 \n  99% $time_total_99"
+    echo -e "time_dns \n  avg: $time_dns \n  75%: $time_dns_75 \n  95%: $time_dns_95 \n  99%: $time_dns_99"
+    echo -e "time_connect \n  avg: $time_connect \n  75%: $time_connect_75 \n  95%: $time_connect_95 \n  99%: $time_connect_99"
+    echo -e "time_appconnect \n  avg: $time_appconnect \n  75%: $time_appconnect_75 \n  95%: $time_appconnect_95 \n  99%: $time_appconnect_99"
+    echo -e "time_pretransfer \n  avg: $time_pretransfer \n  75%: $time_pretransfer_75 \n  95%: $time_pretransfer_95 \n  99%: $time_pretransfer_99"
+    echo -e "time_ttfb \n  avg: $time_ttfb \n  75%: $time_ttfb_75 \n  95%: $time_ttfb_95 \n  99%: $time_ttfb_99"
+    echo -e "time_total \n  avg: $time_total \n  75%: $time_total_75 \n  95%: $time_total_95 \n  99%: $time_total_99"
   fi
 }
 
