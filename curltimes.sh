@@ -4,6 +4,7 @@
 ############################################################
 total=3
 bin='/usr/bin/curl'
+#bin='/usr/local/src/curl/src/curl'
 dt=$(date +"%d%m%y-%H%M%S")
 ############################################################
 
@@ -13,11 +14,14 @@ fi
 if [[ -f /usr/bin/apt-get && ! -f /usr/bin/datamash ]]; then
   apt-get -y -q install datamash >/dev/null 2>&1
   fi
-if [ -f /usr/local/http2-15/bin/curl ]; then
+if [ -f /usr/local/http2-15/bin/curl ] && [[ "$bin" != '/usr/local/src/curl/src/curl' ]]; then
   bin='/usr/local/http2-15/bin/curl'
 fi
-if [[ "$bin" = '/usr/local/http2-15/bin/curl' || -d /usr/local/http2-15/lib ]]; then
-  export LD_LIBRARY_PATH='/usr/local/http2-15/lib'
+if [[ "$bin" = '/usr/local/http2-15/bin/curl' || -d /usr/local/http2-15/lib ]] && [[ "$bin" != '/usr/local/src/curl/src/curl' ]]; then
+  export LD_LIBRARY_PATH=/usr/local/http2-15/lib
+fi
+if [[ "$bin" = '/usr/local/src/curl/src/curl' || -d /usr/lib/x86_64-linux-gnu ]]; then
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/x86_64-linux-gnu
 fi
 
 curl_format='{
@@ -160,7 +164,8 @@ curlrun() {
   tls=$3
   tlsmax="--tls-max $tls"
   datalog="/tmp/curltimes-${mode}-${dt}.txt"
-  # used as headers for the CSV file
+  curlinfo=$($bin -Ivk $url $tlsmax 2>&1 | egrep 'SSL connection using|user-agent:|HEAD / ' | sed -e 's|* SSL connection using ||' -e 's|> user-agent: ||' -e 's|> HEAD / ||' -e 's| \/ | |' -e 's|curl/|curl |' | sort -r)
+  echo -e "$curlinfo\n"
   if [[ "$mode" = 'csv-sum' ]]; then
     for ((n=0;n<total;n++))
     do
