@@ -4,7 +4,7 @@
 ############################################################
 total=3
 bin='/usr/bin/curl'
-datalog='/tmp/curltimes.txt'
+dt=$(date +"%d%m%y-%H%M%S")
 ############################################################
 
 if [[ -f /usr/bin/yum && ! -f /usr/bin/datamash ]]; then
@@ -30,7 +30,11 @@ curl_format='{
 }'
 
 header() {
-  echo '["DNS","Connect","SSL","Wait","TTFB","Total Time"]'
+  echo 'DNS,Connect,SSL,Wait,TTFB,Total Time'
+}
+
+header_summary() {
+  echo "avg:,min:,max:,75%:,95%:,99%:"
 }
 
 processlog() {
@@ -121,7 +125,33 @@ processlog() {
     echo -e "time_pretransfer \n  avg: $time_pretransfer \n  min: $time_pretransfer_min \n  max: $time_pretransfer_max \n  75%: $time_pretransfer_75 \n  95%: $time_pretransfer_95 \n  99%: $time_pretransfer_99"
     echo -e "time_ttfb \n  avg: $time_ttfb \n  min: $time_ttfb_min \n  max: $time_ttfb_max \n  75%: $time_ttfb_75 \n  95%: $time_ttfb_95 \n  99%: $time_ttfb_99"
     echo -e "time_total \n  avg: $time_total \n  min: $time_total_min \n  max: $time_total_max \n  75%: $time_total_75 \n  95%: $time_total_95 \n  99%: $time_total_99"
+
+    echo
+    echo -e "time_dns"
+    header_summary
+    echo "$time_dns,$time_dns_min,$time_dns_max,$time_dns_75,$time_dns_95,$time_dns_99"
+
+    echo -e "time_connect"
+    header_summary
+    echo "$time_connect,$time_connect_min,$time_connect_max,$time_connect_75,$time_connect_95,$time_connect_99"
+
+    echo -e "time_appconnect"
+    header_summary
+    echo "$time_appconnect,$time_appconnect_min,$time_appconnect_max,$time_appconnect_75,$time_appconnect_95,$time_appconnect_99"
+
+    echo -e "time_pretransfer"
+    header_summary
+    echo "$time_pretransfer,$time_pretransfer_min,$time_pretransfer_max,$time_pretransfer_75,$time_pretransfer_95,$time_pretransfer_99"
+
+    echo -e "time_ttfb"
+    header_summary
+    echo "$time_ttfb,$time_ttfb_min,$time_ttfb_max,$time_ttfb_75,$time_ttfb_95,$time_ttfb_99"
+
+    echo -e "time_total"
+    header_summary
+    echo "$time_total,$time_total_min,$time_total_max,$time_total_75,$time_total_95,$time_total_99"
   fi
+  rm -f "$datalog"
 }
 
 curlrun() {
@@ -129,6 +159,7 @@ curlrun() {
   url=$2
   tls=$3
   tlsmax="--tls-max $tls"
+  datalog="/tmp/curltimes-${mode}-${dt}.txt"
   # used as headers for the CSV file
   if [[ "$mode" = 'csv-sum' ]]; then
     for ((n=0;n<total;n++))
