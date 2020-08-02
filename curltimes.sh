@@ -177,8 +177,8 @@ curlrun() {
     # curl binary, libcurl does not support HTTP/3
     curlopts=""
   fi
-  curlinfo=$($bin -Ivk $url $tlsmax $curlopts 2>&1 | egrep 'SSL connection using|> user-agent:|HEAD / ' | sed -e 's|* SSL connection using ||' -e 's|> user-agent: ||' -e 's|> HEAD / ||' -e 's| \/ | |' -e 's|curl/|curl |' | sort -r)
-  echo -e "$curlinfo\n"
+  curlinfo=$($bin -Ivk $url $tlsmax $curlopts 2>&1 | egrep 'Connected to |SSL connection using|> user-agent:|HEAD / ' | sed -e 's|* SSL connection using ||' -e 's|> user-agent: ||' -e 's|> HEAD / ||' -e 's| \/ | |' -e 's|curl/|curl |' -e 's|^* ||' | sort -r)
+  echo -e "$curlinfo\nSample Size: $total\n"
   if [[ "$mode" = 'csv-sum' ]]; then
     for ((n=0;n<total;n++))
     do
