@@ -410,3 +410,91 @@ diff -u <(./curltimes.sh csv-sum https://servermanager.guide) <(./curltimes.sh c
 -0.078112,0.069601,0.116067,0.078006,0.098002,0.112454
 +0.067829,0.057958,0.079680,0.076682,0.078576,0.079459
 ```
+
+# curl HTTP/3 support
+
+`curltimes.sh` script can optionally support curl HTTP/3 tests if you change script's `bin=` and `bin_http3` variables to match the path for your custom curl version binary built with HTTP/3 support as outlined at https://github.com/curl/curl/blob/master/docs/HTTP3.md. However, as curl HTTP/3 requests are done over QUIC and not TLS, you won't be testing TLSv1.2 or TLSv1.3 but HTTP/3 over QUIC.
+
+Then change script variables `http3='n'` to `http3='y'` and change the curl HTTP/3 binary's library path variable `library_path_http3` to where you installed it for custom curl HTTP/3 binary
+
+```
+bin='/usr/local/src/curl/src/curl'
+bin_http3='/usr/local/src/curl/src/curl'
+http3='y'
+library_path_http3='/usr/lib/x86_64-linux-gnu'
+```
+
+Then running `csv-max-sum` option would so curl HTTP/3 binary timings but there is no TLS protocol info due to [HTTP/3 over QUIC and not TLS](https://github.com/curl/curl/issues/5763) and `time_appconnect` timings are not available right now with curl HTTP/3 requests. See issue [here](https://github.com/curl/curl/issues/4516) (seems `time_connect` is now available since that issue was created).
+
+```
+./curltimes.sh csv-max-sum https://servermanager.guide                                                                 
+curl 7.72.0-DEV
+HTTP/3
+
+0.002384,0.017785,0,0.017849,0.042407,0.055939
+0.002384,0.017119,0,0.017182,0.044635,0.058338
+0.002049,0.015824,0,0.015888,0.047756,0.057552
+
+time_dns 
+  avg: 0.002272 
+  min: 0.002049 
+  max: 0.002384 
+  75%: 0.002384 
+  95%: 0.002384 
+  99%: 0.002384
+time_connect 
+  avg: 0.016909 
+  min: 0.015824 
+  max: 0.017785 
+  75%: 0.017452 
+  95%: 0.017718 
+  99%: 0.017772
+time_appconnect 
+  avg: 0.000000 
+  min: 0.000000 
+  max: 0.000000 
+  75%: 0.000000 
+  95%: 0.000000 
+  99%: 0.000000
+time_pretransfer 
+  avg: 0.016973 
+  min: 0.015888 
+  max: 0.017849 
+  75%: 0.017516 
+  95%: 0.017782 
+  99%: 0.017836
+time_ttfb 
+  avg: 0.044933 
+  min: 0.042407 
+  max: 0.047756 
+  75%: 0.046196 
+  95%: 0.047444 
+  99%: 0.047694
+time_total 
+  avg: 0.057276 
+  min: 0.055939 
+  max: 0.058338 
+  75%: 0.057945 
+  95%: 0.058259 
+  99%: 0.058322
+
+time_dns
+avg:,min:,max:,75%:,95%:,99%:
+0.002272,0.002049,0.002384,0.002384,0.002384,0.002384
+time_connect
+avg:,min:,max:,75%:,95%:,99%:
+0.016909,0.015824,0.017785,0.017452,0.017718,0.017772
+time_appconnect
+avg:,min:,max:,75%:,95%:,99%:
+0.000000,0.000000,0.000000,0.000000,0.000000,0.000000
+time_pretransfer
+avg:,min:,max:,75%:,95%:,99%:
+0.016973,0.015888,0.017849,0.017516,0.017782,0.017836
+time_ttfb
+avg:,min:,max:,75%:,95%:,99%:
+0.044933,0.042407,0.047756,0.046196,0.047444,0.047694
+time_total
+avg:,min:,max:,75%:,95%:,99%:
+0.057276,0.055939,0.058338,0.057945,0.058259,0.058322
+```
+

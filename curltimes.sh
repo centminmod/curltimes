@@ -6,7 +6,11 @@ total=3
 bin='/usr/bin/curl'
 #bin='/usr/local/src/curl/src/curl'
 dt=$(date +"%d%m%y-%H%M%S")
+
+# HTTP/3 curl
 http3='n'
+bin_http3='/usr/local/src/curl/src/curl'
+library_path_http3='/usr/lib/x86_64-linux-gnu'
 ############################################################
 
 if [[ -f /usr/bin/yum && ! -f /usr/bin/datamash ]]; then
@@ -21,8 +25,8 @@ fi
 if [[ "$bin" = '/usr/local/http2-15/bin/curl' || -d /usr/local/http2-15/lib ]] && [[ "$bin" != '/usr/local/src/curl/src/curl' ]]; then
   export LD_LIBRARY_PATH=/usr/local/http2-15/lib
 fi
-if [[ "$bin" = '/usr/local/src/curl/src/curl' || -d /usr/lib/x86_64-linux-gnu ]]; then
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/x86_64-linux-gnu
+if [[ "$bin" = "$bin_http3" || -d "${library_path_http3}" ]]; then
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${library_path_http3}
 fi
 
 curl_format='{
