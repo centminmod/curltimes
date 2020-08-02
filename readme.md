@@ -271,10 +271,16 @@ avg:,min:,max:,75%:,95%:,99%:
 0.071444,0.064863,0.075692,0.074735,0.075501,0.075654
 ```
 
-TLS 1.2 vs TLS 1.3 for 11 run diff compare
+## TLS 1.2 vs TLS 1.3 for 11 run diff compare
 
 ```
-diff -u <(./curltimes.sh csv-sum https://servermanager.guide) <(./curltimes.sh csv-max-sum https://servermanager.guide)
+domain=servermanager.guide
+time diff -u <(./curltimes.sh csv-sum https://$domain) <(./curltimes.sh csv-max-sum https://$domain)
+```
+
+```
+domain=servermanager.guide
+diff -u <(./curltimes.sh csv-sum https://$domain) <(./curltimes.sh csv-max-sum https://$domain)
 --- /dev/fd/63  2020-08-01 21:19:51.010395958 +0000
 +++ /dev/fd/62  2020-08-01 21:19:51.011395968 +0000
 @@ -1,77 +1,77 @@
