@@ -424,7 +424,7 @@ http3='y'
 library_path_http3='/usr/lib/x86_64-linux-gnu'
 ```
 
-Then running `csv-max-sum` option would so curl HTTP/3 binary timings but there is no TLS protocol info due to [HTTP/3 over QUIC and not TLS](https://github.com/curl/curl/issues/5763) and `time_appconnect` timings are not available right now with curl HTTP/3 requests. See issue [here](https://github.com/curl/curl/issues/4516) (seems `time_connect` is now available since that issue was created).
+Then running `csv-max-sum` option would display curl HTTP/3 binary timings but there is no TLS protocol info due to [HTTP/3 over QUIC and not TLS](https://github.com/curl/curl/issues/5763) and `time_appconnect` timings are not available right now resulting in zero values with curl HTTP/3 requests. See issue [here](https://github.com/curl/curl/issues/4516) (seems `time_connect` is now available since that issue was created).
 
 ```
 ./curltimes.sh csv-max-sum https://servermanager.guide                                                                 
