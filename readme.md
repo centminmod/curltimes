@@ -2,6 +2,13 @@
 
 curl measurement tool for HTTPS connection times using shell script modified from https://nooshu.github.io/blog/2020/07/30/measuring-tls-13-ipv4-ipv6-performance/
 
+* [Usage](https://github.com/centminmod/curltimes#usage)
+* [Examples](https://github.com/centminmod/curltimes#examples)
+* [Process Metrics](https://github.com/centminmod/curltimes#process-metrics)
+* [TLS 1.2 vs TLS 1.3 for 11 run diff compare](https://github.com/centminmod/curltimes#tls-12-vs-tls-13-for-11-run-diff-compare)
+* [curl HTTP/3 support](https://github.com/centminmod/curltimes#curl-http3-support)
+* [Compare curl HTTP/3 over QUIC vs HTTP/2 over TLSv1.3](https://github.com/centminmod/curltimes#compare-curl-http3-over-quic-vs-http2-over-tlsv13)
+
 # Usage
 
 ```
