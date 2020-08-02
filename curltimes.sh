@@ -6,6 +6,7 @@ total=3
 bin='/usr/bin/curl'
 #bin='/usr/local/src/curl/src/curl'
 dt=$(date +"%d%m%y-%H%M%S")
+http3='n'
 ############################################################
 
 if [[ -f /usr/bin/yum && ! -f /usr/bin/datamash ]]; then
@@ -164,19 +165,27 @@ curlrun() {
   tls=$3
   tlsmax="--tls-max $tls"
   datalog="/tmp/curltimes-${mode}-${dt}.txt"
-  curlinfo=$($bin -Ivk $url $tlsmax 2>&1 | egrep 'SSL connection using|user-agent:|HEAD / ' | sed -e 's|* SSL connection using ||' -e 's|> user-agent: ||' -e 's|> HEAD / ||' -e 's| \/ | |' -e 's|curl/|curl |' | sort -r)
+  checkhttp3=$($bin --http3 -I $url $tlsmax >/dev/null 2>&1; echo $?)
+  if [[ "$http3" = [yY] && "$checkhttp3" -eq '0' ]]; then
+    # curl binary, libcurl supports HTTP/3
+    curlopts='--http3'
+  else
+    # curl binary, libcurl does not support HTTP/3
+    curlopts=""
+  fi
+  curlinfo=$($bin -Ivk $url $tlsmax $curlopts 2>&1 | egrep 'SSL connection using|> user-agent:|HEAD / ' | sed -e 's|* SSL connection using ||' -e 's|> user-agent: ||' -e 's|> HEAD / ||' -e 's| \/ | |' -e 's|curl/|curl |' | sort -r)
   echo -e "$curlinfo\n"
   if [[ "$mode" = 'csv-sum' ]]; then
     for ((n=0;n<total;n++))
     do
-      $bin -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax
+      $bin -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
       sleep 0.3 #space the timings out slightly
     done | jq -r '[.[]] | @csv' | tee "$datalog"
     processlog y
   elif [[ "$mode" = 'csv-max-sum' ]]; then
     for ((n=0;n<total;n++))
     do
-      $bin -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax
+      $bin -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
       sleep 0.3 #space the timings out slightly
     done | jq -r '[.[]] | @csv' | tee "$datalog"
     processlog y
@@ -184,7 +193,7 @@ curlrun() {
     header
     for ((n=0;n<total;n++))
     do
-      $bin -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax
+      $bin -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
       sleep 0.3 #space the timings out slightly
     done | jq -r '[.[]] | @csv' | tee "$datalog"
     processlog
@@ -192,7 +201,7 @@ curlrun() {
     header
     for ((n=0;n<total;n++))
     do
-      $bin -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax
+      $bin -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
       sleep 0.3 #space the timings out slightly
     done | tee "$datalog"
   fi
