@@ -244,7 +244,7 @@ compared() {
   comparelog="/tmp/curltimes-compared-${dt}.txt"
   comp_tlsmax="--tls-max 1.3"
   if [[ "$comp_resolveip" ]]; then
-    comp_resolve_ip=" --resolve ${url}:443:${resolveip}"
+    comp_resolve_ip=" --resolve ${url}:443:${comp_resolveip}"
   else
     comp_resolve_ip=
   fi
