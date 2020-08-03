@@ -51,7 +51,7 @@ header() {
 }
 
 header_summary() {
-  echo "avg:,min:,max:,75%:,95%:,99%:"
+  echo "avg:,median:,min:,max:,75%:,95%:,99%:"
 }
 
 processlog() {
@@ -68,6 +68,19 @@ processlog() {
   time_ttfb=$(printf "%.6f\n" $time_ttfb)
   time_total=$(cat $datalog | awk -F ',' '{print $6}' | datamash -t, --no-strict --filler 0 mean 1)
   time_total=$(printf "%.6f\n" $time_total)
+
+  time_dns_median=$(cat $datalog | awk -F ',' '{print $1}' | datamash -t, --no-strict --filler 0 median 1)
+  time_dns_median=$(printf "%.6f\n" $time_dns_median)
+  time_connect_median=$(cat $datalog | awk -F ',' '{print $2}' | datamash -t, --no-strict --filler 0 median 1)
+  time_connect_median=$(printf "%.6f\n" $time_connect_median)
+  time_appconnect_median=$(cat $datalog | awk -F ',' '{print $3}' | datamash -t, --no-strict --filler 0 median 1)
+  time_appconnect_median=$(printf "%.6f\n" $time_appconnect_median)
+  time_pretransfer_median=$(cat $datalog | awk -F ',' '{print $4}' | datamash -t, --no-strict --filler 0 median 1)
+  time_pretransfer_median=$(printf "%.6f\n" $time_pretransfer_median)
+  time_ttfb_median=$(cat $datalog | awk -F ',' '{print $5}' | datamash -t, --no-strict --filler 0 median 1)
+  time_ttfb_median=$(printf "%.6f\n" $time_ttfb_median)
+  time_total_median=$(cat $datalog | awk -F ',' '{print $6}' | datamash -t, --no-strict --filler 0 median 1)
+  time_total_median=$(printf "%.6f\n" $time_total_median)
 
   time_dns_min=$(cat $datalog | awk -F ',' '{print $1}' | datamash -t, --no-strict --filler 0 min 1)
   time_dns_min=$(printf "%.6f\n" $time_dns_min)
@@ -136,37 +149,37 @@ processlog() {
 
   if [[ "$display" = [yY] ]]; then
     echo
-    echo -e "time_dns \n  avg: $time_dns \n  min: $time_dns_min \n  max: $time_dns_max \n  75%: $time_dns_75 \n  95%: $time_dns_95 \n  99%: $time_dns_99"
-    echo -e "time_connect \n  avg: $time_connect \n  min: $time_connect_min \n  max: $time_connect_max \n  75%: $time_connect_75 \n  95%: $time_connect_95 \n  99%: $time_connect_99"
-    echo -e "time_appconnect \n  avg: $time_appconnect \n  min: $time_appconnect_min \n  max: $time_appconnect_max \n  75%: $time_appconnect_75 \n  95%: $time_appconnect_95 \n  99%: $time_appconnect_99"
-    echo -e "time_pretransfer \n  avg: $time_pretransfer \n  min: $time_pretransfer_min \n  max: $time_pretransfer_max \n  75%: $time_pretransfer_75 \n  95%: $time_pretransfer_95 \n  99%: $time_pretransfer_99"
-    echo -e "time_ttfb \n  avg: $time_ttfb \n  min: $time_ttfb_min \n  max: $time_ttfb_max \n  75%: $time_ttfb_75 \n  95%: $time_ttfb_95 \n  99%: $time_ttfb_99"
-    echo -e "time_total \n  avg: $time_total \n  min: $time_total_min \n  max: $time_total_max \n  75%: $time_total_75 \n  95%: $time_total_95 \n  99%: $time_total_99"
+    echo -e "time_dns \n  avg:    $time_dns \n  median: $time_dns_median \n  min:    $time_dns_min \n  max:    $time_dns_max \n  75%:    $time_dns_75 \n  95%:    $time_dns_95 \n  99%:    $time_dns_99"
+    echo -e "time_connect \n  avg:    $time_connect \n  median: $time_connect_median \n  min:    $time_connect_min \n  max:    $time_connect_max \n  75%:    $time_connect_75 \n  95%:    $time_connect_95 \n  99%:    $time_connect_99"
+    echo -e "time_appconnect \n  avg:    $time_appconnect \n  median: $time_appconnect_median \n  min:    $time_appconnect_min \n  max:    $time_appconnect_max \n  75%:    $time_appconnect_75 \n  95%:    $time_appconnect_95 \n  99%:    $time_appconnect_99"
+    echo -e "time_pretransfer \n  avg:    $time_pretransfer \n  median: $time_pretransfer_median \n  min:    $time_pretransfer_min \n  max:    $time_pretransfer_max \n  75%:    $time_pretransfer_75 \n  95%:    $time_pretransfer_95 \n  99%:    $time_pretransfer_99"
+    echo -e "time_ttfb \n  avg:    $time_ttfb \n  median: $time_ttfb_median \n  min:    $time_ttfb_min \n  max:    $time_ttfb_max \n  75%:    $time_ttfb_75 \n  95%:    $time_ttfb_95 \n  99%:    $time_ttfb_99"
+    echo -e "time_total \n  avg:    $time_total \n  median: $time_total_median \n  min:    $time_total_min \n  max:    $time_total_max \n  75%:    $time_total_75 \n  95%:    $time_total_95 \n  99%:    $time_total_99"
 
     echo
     echo -e "time_dns"
     header_summary
-    echo "$time_dns,$time_dns_min,$time_dns_max,$time_dns_75,$time_dns_95,$time_dns_99"
+    echo "$time_dns,$time_dns_median,$time_dns_min,$time_dns_max,$time_dns_75,$time_dns_95,$time_dns_99"
 
     echo -e "time_connect"
     header_summary
-    echo "$time_connect,$time_connect_min,$time_connect_max,$time_connect_75,$time_connect_95,$time_connect_99"
+    echo "$time_connect,$time_connect_median,$time_connect_min,$time_connect_max,$time_connect_75,$time_connect_95,$time_connect_99"
 
     echo -e "time_appconnect"
     header_summary
-    echo "$time_appconnect,$time_appconnect_min,$time_appconnect_max,$time_appconnect_75,$time_appconnect_95,$time_appconnect_99"
+    echo "$time_appconnect,$time_appconnect_median,$time_appconnect_min,$time_appconnect_max,$time_appconnect_75,$time_appconnect_95,$time_appconnect_99"
 
     echo -e "time_pretransfer"
     header_summary
-    echo "$time_pretransfer,$time_pretransfer_min,$time_pretransfer_max,$time_pretransfer_75,$time_pretransfer_95,$time_pretransfer_99"
+    echo "$time_pretransfer,$time_pretransfer_median,$time_pretransfer_min,$time_pretransfer_max,$time_pretransfer_75,$time_pretransfer_95,$time_pretransfer_99"
 
     echo -e "time_ttfb"
     header_summary
-    echo "$time_ttfb,$time_ttfb_min,$time_ttfb_max,$time_ttfb_75,$time_ttfb_95,$time_ttfb_99"
+    echo "$time_ttfb,$time_ttfb_median,$time_ttfb_min,$time_ttfb_max,$time_ttfb_75,$time_ttfb_95,$time_ttfb_99"
 
     echo -e "time_total"
     header_summary
-    echo "$time_total,$time_total_min,$time_total_max,$time_total_75,$time_total_95,$time_total_99"
+    echo "$time_total,$time_total_median,$time_total_min,$time_total_max,$time_total_75,$time_total_95,$time_total_99"
   fi
   rm -f "$datalog"
 }
