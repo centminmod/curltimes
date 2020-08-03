@@ -13,7 +13,7 @@ curl measurement tool for HTTPS connection times using shell script modified fro
 # Usage
 
 ```
-./curltimes.sh 
+./curltimes.sh  
 Usage:
 
 TLS 1.2 max tests
@@ -27,6 +27,9 @@ TLS 1.3 max tests
 CSV Summary
 ./curltimes.sh csv-sum https://domain.com
 ./curltimes.sh csv-max-sum https://domain.com
+
+TLSv1.2 vs TLSv1.3 Compare
+./curltimes.sh compare https://domain.com
 ```
 
 # Examples
