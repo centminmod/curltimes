@@ -187,12 +187,13 @@ processlog() {
 curlrun() {
   mode=$1
   url=$2
+  urlonly=$(echo ${url} | sed -e 's|https:\/\/||')
   tls=$3
   resolveip=$4
   tlsmax="--tls-max $tls"
   datalog="/tmp/curltimes-${mode}-${dt}.txt"
   if [[ "$resolveip" ]]; then
-    resolve_ip=" --resolve ${url}:443:${resolveip}"
+    resolve_ip=" --resolve ${urlonly}:443:${resolveip}"
   else
     resolve_ip=
   fi
@@ -204,7 +205,7 @@ curlrun() {
     # curl binary, libcurl does not support HTTP/3
     curlopts=""
   fi
-  curlinfo=$($bin ${curlip_opt}-Ivk${resolve_ip} $url $tlsmax $curlopts 2>&1 | egrep 'Connected to |SSL connection using|> user-agent:|HEAD / ' | sed -e 's|* SSL connection using ||' -e 's|> user-agent: ||' -e 's|> HEAD / ||' -e 's| \/ | |' -e 's|curl/|curl |' -e 's|^* ||' | sort -r)
+  curlinfo=$($bin ${curlip_opt}-Isvk${resolve_ip} $url $tlsmax $curlopts 2>&1 | egrep 'Connected to |SSL connection using|> user-agent:|HEAD / ' | sed -e 's|* SSL connection using ||' -e 's|> user-agent: ||' -e 's|> HEAD / ||' -e 's| \/ | |' -e 's|curl/|curl |' -e 's|^* ||' | sort -r)
   echo -e "$curlinfo\nSample Size: $total\n"
   if [[ "$mode" = 'csv-sum' ]]; then
     for ((n=0;n<total;n++))
@@ -240,11 +241,12 @@ curlrun() {
 
 compared() {
   url=$1
+  urlonly=$(echo ${url} | sed -e 's|https:\/\/||')
   comp_resolveip=$2
   comparelog="/tmp/curltimes-compared-${dt}.txt"
   comp_tlsmax="--tls-max 1.3"
   if [[ "$comp_resolveip" ]]; then
-    comp_resolve_ip=" --resolve ${url}:443:${comp_resolveip}"
+    comp_resolve_ip=" --resolve ${urlonly}:443:${comp_resolveip}"
   else
     comp_resolve_ip=
   fi
