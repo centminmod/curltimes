@@ -9,6 +9,7 @@ curl measurement tool for HTTPS connection times using shell script modified fro
 * [curl HTTP/3 support](https://github.com/centminmod/curltimes#curl-http3-support)
 * [Compare curl HTTP/3 over QUIC vs HTTP/2 over TLSv1.3](https://github.com/centminmod/curltimes#compare-curl-http3-over-quic-vs-http2-over-tlsv13)
 * [Compare Mode](https://github.com/centminmod/curltimes#compare-mode)
+* [curl resolve mode](https://github.com/centminmod/curltimes#curl-resolve-mode)
 
 # Usage
 
@@ -748,4 +749,140 @@ tls13: 0.066135,0.062355,0.059512,0.076539,0.069447,0.075121,0.076255
        avg:,median:,min:,max:,75%:,95%:,99%:
 tls12: 0.095370,0.094142,0.084327,0.107640,0.100891,0.106290,0.107370
 tls13: 0.077608,0.073708,0.072246,0.086870,0.080289,0.085554,0.086607
+```
+
+# curl resolve mode
+
+`curltimes.sh` supports curl's `--resolve domain:443:[ip_address]` so you can tell curl to connect and resolve to a specific IP address overriding DNS for that domain. Useful for when testing domains that use Cloudflare proxy which have more than 1 IP address associated with the domain's DNS A and AAAA records. This ensures you're testing TLSv1.2 vs TLSv1.3 on the same server/IP.
+
+By default `curltimes.sh` tests against IPv6 address first and fallbacks to IPv4 if IPv6 isn't supported. But if you want to force IPv4 tests, change in script `force_ipv4='n'` to `force_ipv4='y'`.
+
+Run `csv-max-sum` and tell curl to connect to `domain=servermanager.guide` using IPv6 address `2606:4700:10::ac43:26be`
+
+```
+dig +short AAAA servermanager.guide                          
+2606:4700:10::ac43:26be
+2606:4700:10::6816:42fa
+2606:4700:10::6816:43fa
+```
+
+```
+domain=servermanager.guide
+./curltimes.sh csv-max-sum https://$domain 2606:4700:10::ac43:26be                           
+curl 7.72.0-DEV
+TLSv1.3 TLS_AES_128_GCM_SHA256
+HTTP/2
+Connected to servermanager.guide (2606:4700:10::ac43:26be) port 443 (#0)
+Sample Size: 3
+
+0.002388,0.011001,0.027721,0.027805,0.055312,0.063218
+0.002387,0.011143,0.028621,0.028703,0.057248,0.067432
+0.002407,0.011234,0.027669,0.027752,0.057698,0.066897
+
+time_dns 
+  avg:    0.002394 
+  median: 0.002388 
+  min:    0.002387 
+  max:    0.002407 
+  75%:    0.002398 
+  95%:    0.002405 
+  99%:    0.002407
+time_connect 
+  avg:    0.011126 
+  median: 0.011143 
+  min:    0.011001 
+  max:    0.011234 
+  75%:    0.011188 
+  95%:    0.011225 
+  99%:    0.011232
+time_appconnect 
+  avg:    0.028004 
+  median: 0.027721 
+  min:    0.027669 
+  max:    0.028621 
+  75%:    0.028171 
+  95%:    0.028531 
+  99%:    0.028603
+time_pretransfer 
+  avg:    0.028087 
+  median: 0.027805 
+  min:    0.027752 
+  max:    0.028703 
+  75%:    0.028254 
+  95%:    0.028613 
+  99%:    0.028685
+time_ttfb 
+  avg:    0.056753 
+  median: 0.057248 
+  min:    0.055312 
+  max:    0.057698 
+  75%:    0.057473 
+  95%:    0.057653 
+  99%:    0.057689
+time_total 
+  avg:    0.065849 
+  median: 0.066897 
+  min:    0.063218 
+  max:    0.067432 
+  75%:    0.067164 
+  95%:    0.067378 
+  99%:    0.067421
+
+time_dns
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.002394,0.002388,0.002387,0.002407,0.002398,0.002405,0.002407
+time_connect
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.011126,0.011143,0.011001,0.011234,0.011188,0.011225,0.011232
+time_appconnect
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.028004,0.027721,0.027669,0.028621,0.028171,0.028531,0.028603
+time_pretransfer
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.028087,0.027805,0.027752,0.028703,0.028254,0.028613,0.028685
+time_ttfb
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.056753,0.057248,0.055312,0.057698,0.057473,0.057653,0.057689
+time_total
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.065849,0.066897,0.063218,0.067432,0.067164,0.067378,0.067421
+```
+
+Run `compare` and tell curl to connect to `domain=servermanager.guide` using IPv6 address `2606:4700:10::ac43:26be`
+
+```
+domain=servermanager.guide
+./curltimes.sh compare https://$domain 2606:4700:10::ac43:26be
+ curl 7.72.0-DEV
+-TLSv1.2 ECDHE-ECDSA-AES128-GCM-SHA256
++TLSv1.3 TLS_AES_128_GCM_SHA256
+ HTTP/2
+ Connected to servermanager.guide (2606:4700:10::ac43:26be) port 443 (#0)
+ Sample Size: 3
+ 
+
+       time_dns
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.002273,0.002341,0.002040,0.002438,0.002389,0.002428,0.002436
+tls13: 0.002303,0.002342,0.002106,0.002461,0.002402,0.002449,0.002459
+       time_connect
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.010944,0.010974,0.010692,0.011165,0.011069,0.011146,0.011161
+tls13: 0.010984,0.011001,0.010871,0.011080,0.011040,0.011072,0.011078
+       time_appconnect
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.037632,0.037541,0.037520,0.037834,0.037687,0.037805,0.037828
+tls13: 0.027178,0.026750,0.026311,0.028474,0.027612,0.028302,0.028440
+       time_pretransfer
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.037710,0.037609,0.037608,0.037914,0.037762,0.037883,0.037908
+tls13: 0.027265,0.026839,0.026394,0.028561,0.027700,0.028389,0.028527
+       time_ttfb
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.074693,0.078118,0.064590,0.081372,0.079745,0.081047,0.081307
+tls13: 0.061370,0.056089,0.054502,0.073519,0.064804,0.071776,0.073170
+       time_total
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.083769,0.087006,0.074226,0.090074,0.088540,0.089767,0.090013
+tls13: 0.070788,0.064854,0.064317,0.083194,0.074024,0.081360,0.082827
 ```

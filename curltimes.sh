@@ -188,9 +188,15 @@ curlrun() {
   mode=$1
   url=$2
   tls=$3
+  resolveip=$4
   tlsmax="--tls-max $tls"
   datalog="/tmp/curltimes-${mode}-${dt}.txt"
-  checkhttp3=$($bin --http3 ${curlip_opt}-I $url $tlsmax --connect-timeout 2 >/dev/null 2>&1; echo $?)
+  if [[ "$resolveip" ]]; then
+    resolve_ip=" --resolve ${url}:443:${resolveip}"
+  else
+    resolve_ip=
+  fi
+  checkhttp3=$($bin --http3 ${curlip_opt}${resolve_ip} -I $url $tlsmax --connect-timeout 2 >/dev/null 2>&1; echo $?)
   if [[ "$http3" = [yY] && "$checkhttp3" -eq '0' ]]; then
     # curl binary, libcurl supports HTTP/3
     curlopts='--http3'
@@ -198,19 +204,19 @@ curlrun() {
     # curl binary, libcurl does not support HTTP/3
     curlopts=""
   fi
-  curlinfo=$($bin ${curlip_opt}-Ivk $url $tlsmax $curlopts 2>&1 | egrep 'Connected to |SSL connection using|> user-agent:|HEAD / ' | sed -e 's|* SSL connection using ||' -e 's|> user-agent: ||' -e 's|> HEAD / ||' -e 's| \/ | |' -e 's|curl/|curl |' -e 's|^* ||' | sort -r)
+  curlinfo=$($bin ${curlip_opt}-Ivk${resolve_ip} $url $tlsmax $curlopts 2>&1 | egrep 'Connected to |SSL connection using|> user-agent:|HEAD / ' | sed -e 's|* SSL connection using ||' -e 's|> user-agent: ||' -e 's|> HEAD / ||' -e 's| \/ | |' -e 's|curl/|curl |' -e 's|^* ||' | sort -r)
   echo -e "$curlinfo\nSample Size: $total\n"
   if [[ "$mode" = 'csv-sum' ]]; then
     for ((n=0;n<total;n++))
     do
-      $bin ${curlip_opt}-w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
+      $bin ${curlip_opt}${resolve_ip} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
       sleep 0.3 #space the timings out slightly
     done | jq -r '[.[]] | @csv' | tee "$datalog"
     processlog y
   elif [[ "$mode" = 'csv-max-sum' ]]; then
     for ((n=0;n<total;n++))
     do
-      $bin ${curlip_opt}-w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
+      $bin ${curlip_opt}${resolve_ip} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
       sleep 0.3 #space the timings out slightly
     done | jq -r '[.[]] | @csv' | tee "$datalog"
     processlog y
@@ -218,7 +224,7 @@ curlrun() {
     header
     for ((n=0;n<total;n++))
     do
-      $bin ${curlip_opt}-w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
+      $bin ${curlip_opt}${resolve_ip} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
       sleep 0.3 #space the timings out slightly
     done | jq -r '[.[]] | @csv' | tee "$datalog"
     processlog
@@ -226,7 +232,7 @@ curlrun() {
     header
     for ((n=0;n<total;n++))
     do
-      $bin ${curlip_opt}-w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
+      $bin ${curlip_opt}${resolve_ip} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
       sleep 0.3 #space the timings out slightly
     done | tee "$datalog"
   fi
@@ -234,9 +240,15 @@ curlrun() {
 
 compared() {
   url=$1
+  comp_resolveip=$2
   comparelog="/tmp/curltimes-compared-${dt}.txt"
   comp_tlsmax="--tls-max 1.3"
-  check_tlsmax=$($bin --tlsv1.3 ${curlip_opt}-I $url --connect-timeout 2 >/dev/null 2>&1; echo $?)
+  if [[ "$comp_resolveip" ]]; then
+    comp_resolve_ip=" --resolve ${url}:443:${resolveip}"
+  else
+    comp_resolve_ip=
+  fi
+  check_tlsmax=$($bin --tlsv1.3 ${curlip_opt}${comp_resolve_ip} -I $url --connect-timeout 2 >/dev/null 2>&1; echo $?)
   if [ "$check_tlsmax" -eq '0' ]; then
     tls2='tls12'
     tls3='tls13'
@@ -244,7 +256,7 @@ compared() {
     tls2='tls12'
     tls3='tls12'
   fi 
-  diff -u <(curlrun csv-sum "$url" 1.2) <(curlrun csv-max-sum "$url" 1.3) > "$comparelog"
+  diff -u <(curlrun csv-sum "$url" 1.2 "$comp_resolveip") <(curlrun csv-max-sum "$url" 1.3 "$comp_resolveip") > "$comparelog"
   cat "$comparelog" | sed -n -e 4,10p
   echo
   cat "$comparelog" | tail -24 | sed -e "s|-|$tls2: |" -e "s|+|$tls3: |" -e 's|avg:|      avg:|' -e 's|time_|      time_|g'
@@ -272,25 +284,25 @@ help() {
 
 case "$1" in
   json )
-    curlrun json "$2" 1.2
+    curlrun json "$2" 1.2 "$3"
     ;;
   csv )
-    curlrun csv "$2" 1.2
+    curlrun csv "$2" 1.2 "$3"
     ;;
   json-max )
-    curlrun json "$2" 1.3
+    curlrun json "$2" 1.3 "$3"
     ;;
   csv-max )
-    curlrun csv "$2" 1.3
+    curlrun csv "$2" 1.3 "$3"
     ;;
   csv-sum )
-    curlrun csv-sum "$2" 1.2
+    curlrun csv-sum "$2" 1.2 "$3"
     ;;
   csv-max-sum )
-    curlrun csv-max-sum "$2" 1.3
+    curlrun csv-max-sum "$2" 1.3 "$3"
     ;;
   compare )
-    compared "$2"
+    compared "$2" "$3"
     ;;
   *)
     help
