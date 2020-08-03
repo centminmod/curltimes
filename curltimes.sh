@@ -190,7 +190,7 @@ curlrun() {
   tls=$3
   tlsmax="--tls-max $tls"
   datalog="/tmp/curltimes-${mode}-${dt}.txt"
-  checkhttp3=$($bin --http3 ${curlip_opt}-I $url $tlsmax >/dev/null 2>&1; echo $?)
+  checkhttp3=$($bin --http3 ${curlip_opt}-I $url $tlsmax --connect-timeout 2 >/dev/null 2>&1; echo $?)
   if [[ "$http3" = [yY] && "$checkhttp3" -eq '0' ]]; then
     # curl binary, libcurl supports HTTP/3
     curlopts='--http3'
