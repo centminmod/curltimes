@@ -232,6 +232,25 @@ curlrun() {
   fi
 }
 
+compared() {
+  url=$1
+  comparelog="/tmp/curltimes-compared-${dt}.txt"
+  comp_tlsmax="--tls-max 1.3"
+  check_tlsmax=$($bin --tlsv1.3 ${curlip_opt}-I $url --connect-timeout 2 >/dev/null 2>&1; echo $?)
+  if [ "$check_tlsmax" -eq '0' ]; then
+    tls2='tls12'
+    tls3='tls13'
+  else
+    tls2='tls12'
+    tls3='tls12'
+  fi 
+  diff -u <(curlrun csv-sum "$url" 1.2) <(curlrun csv-max-sum "$url" 1.3) > "$comparelog"
+  cat "$comparelog" | sed -n -e 4,10p
+  echo
+  cat "$comparelog" | tail -24 | sed -e "s|-|$tls2: |" -e "s|+|$tls3: |" -e 's|avg:|      avg:|' -e 's|time_|      time_|g'
+  rm -f "$comparelog"
+}
+
 help() {
   echo "Usage:"
   echo
@@ -246,6 +265,9 @@ help() {
   echo "CSV Summary"
   echo "$0 csv-sum https://domain.com"
   echo "$0 csv-max-sum https://domain.com"
+  echo
+  echo "TLSv1.2 vs TLSv1.3 Compare"
+  echo "$0 compare https://domain.com"
 }
 
 case "$1" in
@@ -266,6 +288,9 @@ case "$1" in
     ;;
   csv-max-sum )
     curlrun csv-max-sum "$2" 1.3
+    ;;
+  compare )
+    compared "$2"
     ;;
   *)
     help

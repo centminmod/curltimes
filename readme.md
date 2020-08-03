@@ -5,9 +5,10 @@ curl measurement tool for HTTPS connection times using shell script modified fro
 * [Usage](https://github.com/centminmod/curltimes#usage)
 * [Examples](https://github.com/centminmod/curltimes#examples)
 * [Process Metrics](https://github.com/centminmod/curltimes#process-metrics)
-* [TLS 1.2 vs TLS 1.3 for 11 run diff compare](https://github.com/centminmod/curltimes#tls-12-vs-tls-13-for-11-run-diff-compare)
+* [TLS 1.2 vs TLS 1.3 diff compare](https://github.com/centminmod/curltimes#tls-12-vs-tls-13-for-11-run-diff-compare)
 * [curl HTTP/3 support](https://github.com/centminmod/curltimes#curl-http3-support)
 * [Compare curl HTTP/3 over QUIC vs HTTP/2 over TLSv1.3](https://github.com/centminmod/curltimes#compare-curl-http3-over-quic-vs-http2-over-tlsv13)
+* [Compare Mode](https://github.com/centminmod/curltimes#compare-mode)
 
 # Usage
 
@@ -698,4 +699,50 @@ diff -u curl-http2-tls13.txt curl-http3-quic.txt
  avg:,median:,min:,max:,75%:,95%:,99%:
 -0.066668,0.064145,0.063016,0.072842,0.068494,0.071972,0.072668
 +0.055783,0.057082,0.051880,0.058387,0.057734,0.058256,0.058361
+```
+
+# Compare Mode
+
+Extended `curltimes.sh` to automate the above diff compare for TLSv1.2 versus TLSv1.3 in summary format without individual metrics
+
+```
+domain=servermanager.guide
+./curltimes.sh compare https://$domain
+```
+```
+domain=servermanager.guide
+./curltimes.sh compare https://$domain
+
+ curl 7.72.0-DEV
+-TLSv1.2 ECDHE-ECDSA-AES128-GCM-SHA256
++TLSv1.3 TLS_AES_128_GCM_SHA256
+ HTTP/2
+-Connected to servermanager.guide (2606:4700:10::ac43:26be) port 443 (#0)
++Connected to servermanager.guide (2606:4700:10::6816:42fa) port 443 (#0)
+ Sample Size: 3
+
+       time_dns
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.006312,0.002349,0.002342,0.014245,0.008297,0.013055,0.014007
+tls13: 0.007001,0.002409,0.002332,0.016262,0.009335,0.014877,0.015985
+       time_connect
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.015793,0.013359,0.011095,0.022924,0.018142,0.021968,0.022733
+tls13: 0.016479,0.011109,0.011041,0.027288,0.019198,0.025670,0.026964
+       time_appconnect
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.044413,0.045667,0.039694,0.047878,0.046772,0.047657,0.047834
+tls13: 0.034607,0.029052,0.028229,0.046539,0.037796,0.044790,0.046189
+       time_pretransfer
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.044489,0.045755,0.039760,0.047951,0.046853,0.047731,0.047907
+tls13: 0.034687,0.029118,0.028320,0.046623,0.037871,0.044872,0.046273
+       time_ttfb
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.083920,0.079920,0.075112,0.096729,0.088325,0.095048,0.096393
+tls13: 0.066135,0.062355,0.059512,0.076539,0.069447,0.075121,0.076255
+       time_total
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.095370,0.094142,0.084327,0.107640,0.100891,0.106290,0.107370
+tls13: 0.077608,0.073708,0.072246,0.086870,0.080289,0.085554,0.086607
 ```
