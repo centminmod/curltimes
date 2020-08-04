@@ -10,6 +10,7 @@ curl measurement tool for HTTPS connection times using shell script modified fro
 * [Compare curl HTTP/3 over QUIC vs HTTP/2 over TLSv1.3](https://github.com/centminmod/curltimes#compare-curl-http3-over-quic-vs-http2-over-tlsv13)
 * [Compare Mode](https://github.com/centminmod/curltimes#compare-mode)
 * [curl resolve mode](https://github.com/centminmod/curltimes#curl-resolve-mode)
+* [Environment Variables](https://github.com/centminmod/curltimes#environment-variables)
 
 # Usage
 
@@ -996,4 +997,356 @@ tls13: 0.052009,0.051708,0.044970,0.061672,0.053383,0.059193,0.061464
        avg:,median:,min:,max:,75%:,95%:,99%:
 tls12: 0.073144,0.072723,0.061965,0.111716,0.075453,0.088226,0.105054
 tls13: 0.061540,0.061019,0.052092,0.074847,0.062104,0.069454,0.073440
+```
+
+# Environment Variables
+
+`curltimes.sh` supports environment variables to override the defaults. Currently, supported variables include:
+
+* `curlruns` - value set overrides `total` variable within script which determines how many curl runs and samples are collected.
+* `ipv4=1` - enables and forces IPv4 curl connection.
+* `h3=1` - enables HTTP/3 for `json`, `json-max`, `csv`, `csv-sum`, `csv-max`, `csv-max-sum` options but not supported in `compare` mode as TLSv1.2/TLSv1.3 are not used as HTTP/3 is over a QUIC connection. HTTP/3 mode only works once you have edited curl binary log and library paths as outlined [here](https://github.com/centminmod/curltimes#curl-http3-support).
+* `bin_h3` - set path to your curl HTTP/3 binary
+* `lib_h3` - set path to your curl HTTP/3 library directory
+
+example setting `h3=1`, `ipv4=1` and `curlruns=9` and `export bin_h3='/usr/local/src/curl/src/curl'` and `export lib_h3='/usr/lib/x86_64-linux-gnu'`
+
+```
+export bin_h3='/usr/local/src/curl/src/curl'
+export lib_h3='/usr/lib/x86_64-linux-gnu'
+export h3=1
+export curlruns=9
+./curltimes.sh csv-max-sum https://servermanager.guide                                
+curl 7.72.0-DEV
+HTTP/3
+Connected to servermanager.guide (104.22.67.250) port 443 (#0)
+Sample Size: 9
+
+0.002295,0.016681,0,0.016746,0.051228,0.063913
+0.002299,0.018685,0,0.018749,0.054747,0.068125
+0.001971,0.015321,0,0.015386,0.055653,0.067125
+0.002293,0.019275,0,0.019341,0.059958,0.074864
+0.002361,0.017828,0,0.017891,0.056725,0.07114
+0.00238,0.017844,0,0.017908,0.050139,0.063757
+0.002352,0.01534,0,0.015406,0.053851,0.065687
+0.002448,0.016069,0,0.016134,0.044222,0.056
+0.002016,0.014094,0,0.014158,0.050546,0.06078
+
+time_dns 
+  avg:    0.002268 
+  median: 0.002299 
+  min:    0.001971 
+  max:    0.002448 
+  75%:    0.002361 
+  95%:    0.002421 
+  99%:    0.002443
+time_connect 
+  avg:    0.016793 
+  median: 0.016681 
+  min:    0.014094 
+  max:    0.019275 
+  75%:    0.017844 
+  95%:    0.019039 
+  99%:    0.019228
+time_appconnect 
+  avg:    0.000000 
+  median: 0.000000 
+  min:    0.000000 
+  max:    0.000000 
+  75%:    0.000000 
+  95%:    0.000000 
+  99%:    0.000000
+time_pretransfer 
+  avg:    0.016858 
+  median: 0.016746 
+  min:    0.014158 
+  max:    0.019341 
+  75%:    0.017908 
+  95%:    0.019104 
+  99%:    0.019294
+time_ttfb 
+  avg:    0.053008 
+  median: 0.053851 
+  min:    0.044222 
+  max:    0.059958 
+  75%:    0.055653 
+  95%:    0.058665 
+  99%:    0.059699
+time_total 
+  avg:    0.065710 
+  median: 0.065687 
+  min:    0.056000 
+  max:    0.074864 
+  75%:    0.068125 
+  95%:    0.073374 
+  99%:    0.074566
+
+time_dns
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.002268,0.002299,0.001971,0.002448,0.002361,0.002421,0.002443
+time_connect
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.016793,0.016681,0.014094,0.019275,0.017844,0.019039,0.019228
+time_appconnect
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000
+time_pretransfer
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.016858,0.016746,0.014158,0.019341,0.017908,0.019104,0.019294
+time_ttfb
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.053008,0.053851,0.044222,0.059958,0.055653,0.058665,0.059699
+time_total
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.065710,0.065687,0.056000,0.074864,0.068125,0.073374,0.074566
+```
+
+example setting `h3=1`, `ipv4=1` and `curlruns=9`
+
+```
+export h3=1; export curlruns=9; ./curltimes.sh csv-max-sum https://servermanager.guide
+curl 7.72.0-DEV
+HTTP/3
+Connected to servermanager.guide (104.22.66.250) port 443 (#0)
+Sample Size: 9
+
+0.002321,0.015649,0,0.015713,0.059255,0.074366
+0.002275,0.01915,0,0.019216,0.060405,0.073003
+0.002069,0.014761,0,0.014825,0.040994,0.051945
+0.002372,0.015474,0,0.015538,0.047742,0.058395
+0.002302,0.016191,0,0.016256,0.083929,0.096794
+0.002396,0.020889,0,0.020954,0.050261,0.061726
+0.002317,0.016253,0,0.016317,0.075135,0.089547
+0.002062,0.016816,0,0.016882,0.045394,0.058711
+0.002357,0.014203,0,0.014267,0.041617,0.053641
+
+time_dns 
+  avg:    0.002275 
+  median: 0.002317 
+  min:    0.002062 
+  max:    0.002396 
+  75%:    0.002357 
+  95%:    0.002386 
+  99%:    0.002394
+time_connect 
+  avg:    0.016598 
+  median: 0.016191 
+  min:    0.014203 
+  max:    0.020889 
+  75%:    0.016816 
+  95%:    0.020193 
+  99%:    0.020750
+time_appconnect 
+  avg:    0.000000 
+  median: 0.000000 
+  min:    0.000000 
+  max:    0.000000 
+  75%:    0.000000 
+  95%:    0.000000 
+  99%:    0.000000
+time_pretransfer 
+  avg:    0.016663 
+  median: 0.016256 
+  min:    0.014267 
+  max:    0.020954 
+  75%:    0.016882 
+  95%:    0.020259 
+  99%:    0.020815
+time_ttfb 
+  avg:    0.056081 
+  median: 0.050261 
+  min:    0.040994 
+  max:    0.083929 
+  75%:    0.060405 
+  95%:    0.080411 
+  99%:    0.083225
+time_total 
+  avg:    0.068681 
+  median: 0.061726 
+  min:    0.051945 
+  max:    0.096794 
+  75%:    0.074366 
+  95%:    0.093895 
+  99%:    0.096214
+
+time_dns
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.002275,0.002317,0.002062,0.002396,0.002357,0.002386,0.002394
+time_connect
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.016598,0.016191,0.014203,0.020889,0.016816,0.020193,0.020750
+time_appconnect
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000
+time_pretransfer
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.016663,0.016256,0.014267,0.020954,0.016882,0.020259,0.020815
+time_ttfb
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.056081,0.050261,0.040994,0.083929,0.060405,0.080411,0.083225
+time_total
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.068681,0.061726,0.051945,0.096794,0.074366,0.093895,0.096214
+```
+
+example setting `ipv4=1` and `curlruns=9`
+
+```
+export ipv4=1; export curlruns=9; ./curltimes.sh compare https://servermanager.guide
+ curl 7.72.0-DEV
+-TLSv1.2 ECDHE-ECDSA-AES128-GCM-SHA256
++TLSv1.3 TLS_AES_128_GCM_SHA256
+ HTTP/2
+ Connected to servermanager.guide (104.22.67.250) port 443 (#0)
+ Sample Size: 9
+ 
+
+       time_dns
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.002266,0.002306,0.001963,0.002981,0.002375,0.002752,0.002935
+tls13: 0.002164,0.002065,0.002008,0.002353,0.002305,0.002343,0.002351
+       time_connect
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.011470,0.011221,0.010863,0.012769,0.011674,0.012554,0.012726
+tls13: 0.011150,0.011199,0.010907,0.011664,0.011224,0.011501,0.011631
+       time_appconnect
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.038583,0.037770,0.035704,0.044849,0.040180,0.043083,0.044496
+tls13: 0.028934,0.028282,0.026903,0.033745,0.030355,0.032446,0.033485
+       time_pretransfer
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.038659,0.037840,0.035786,0.044915,0.040259,0.043149,0.044562
+tls13: 0.029023,0.028363,0.026984,0.033866,0.030450,0.032554,0.033604
+       time_ttfb
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.073622,0.068073,0.060629,0.118547,0.074154,0.101701,0.115178
+tls13: 0.062501,0.055822,0.051451,0.108622,0.063113,0.090978,0.105093
+       time_total
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.085110,0.077332,0.069529,0.147206,0.083043,0.122934,0.142352
+tls13: 0.071165,0.064227,0.060406,0.117624,0.070848,0.100372,0.114174
+```
+
+example of setting `curlruns=9`
+
+```
+export curlruns=9; ./curltimes.sh compare https://servermanager.guide 
+ curl 7.72.0-DEV
+-TLSv1.2 ECDHE-ECDSA-AES128-GCM-SHA256
++TLSv1.3 TLS_AES_128_GCM_SHA256
+ HTTP/2
+ Connected to servermanager.guide (2606:4700:10::6816:42fa) port 443 (#0)
+ Sample Size: 9
+ 
+
+       time_dns
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.002187,0.002133,0.002044,0.002341,0.002262,0.002328,0.002338
+tls13: 0.002298,0.002338,0.002043,0.002561,0.002448,0.002521,0.002553
+       time_connect
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.011639,0.010946,0.010742,0.013267,0.013115,0.013238,0.013261
+tls13: 0.011529,0.011110,0.010665,0.013538,0.011268,0.013376,0.013506
+       time_appconnect
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.037602,0.035707,0.034805,0.042342,0.042305,0.042340,0.042342
+tls13: 0.028889,0.027606,0.026484,0.032393,0.031420,0.032186,0.032352
+       time_pretransfer
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.037685,0.035797,0.034889,0.042421,0.042386,0.042421,0.042421
+tls13: 0.028973,0.027697,0.026567,0.032475,0.031508,0.032268,0.032434
+       time_ttfb
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.068222,0.068780,0.057609,0.080518,0.071698,0.077504,0.079915
+tls13: 0.063180,0.059101,0.053305,0.086026,0.062583,0.081901,0.085201
+       time_total
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.078020,0.077660,0.067355,0.091523,0.080867,0.088713,0.090961
+tls13: 0.072594,0.069236,0.062089,0.094605,0.071386,0.091319,0.093948
+```
+```
+export curlruns=9; ./curltimes.sh csv-max-sum https://servermanager.guide      
+curl 7.72.0-DEV
+TLSv1.3 TLS_AES_128_GCM_SHA256
+HTTP/2
+Connected to servermanager.guide (2606:4700:10::ac43:26be) port 443 (#0)
+Sample Size: 9
+
+0.002307,0.010995,0.038922,0.039008,0.07083,0.080726
+0.015496,0.024134,0.043342,0.043424,0.068281,0.078138
+0.002345,0.011095,0.02733,0.027414,0.048162,0.057521
+0.014392,0.025453,0.044971,0.045054,0.098739,0.107577
+0.002321,0.011045,0.028931,0.029016,0.097482,0.106865
+0.002073,0.010717,0.030454,0.030537,0.092841,0.103577
+0.00207,0.010795,0.030796,0.030884,0.066117,0.075068
+0.002316,0.01333,0.031471,0.031555,0.061374,0.069335
+0.002076,0.013093,0.03159,0.031673,0.078254,0.089818
+
+time_dns 
+  avg:    0.005044 
+  median: 0.002316 
+  min:    0.002070 
+  max:    0.015496 
+  75%:    0.002345 
+  95%:    0.015054 
+  99%:    0.015408
+time_connect 
+  avg:    0.014517 
+  median: 0.011095 
+  min:    0.010717 
+  max:    0.025453 
+  75%:    0.013330 
+  95%:    0.024925 
+  99%:    0.025347
+time_appconnect 
+  avg:    0.034201 
+  median: 0.031471 
+  min:    0.027330 
+  max:    0.044971 
+  75%:    0.038922 
+  95%:    0.044319 
+  99%:    0.044841
+time_pretransfer 
+  avg:    0.034285 
+  median: 0.031555 
+  min:    0.027414 
+  max:    0.045054 
+  75%:    0.039008 
+  95%:    0.044402 
+  99%:    0.044924
+time_ttfb 
+  avg:    0.075787 
+  median: 0.070830 
+  min:    0.048162 
+  max:    0.098739 
+  75%:    0.092841 
+  95%:    0.098236 
+  99%:    0.098638
+time_total 
+  avg:    0.085403 
+  median: 0.080726 
+  min:    0.057521 
+  max:    0.107577 
+  75%:    0.103577 
+  95%:    0.107292 
+  99%:    0.107520
+
+time_dns
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.005044,0.002316,0.002070,0.015496,0.002345,0.015054,0.015408
+time_connect
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.014517,0.011095,0.010717,0.025453,0.013330,0.024925,0.025347
+time_appconnect
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.034201,0.031471,0.027330,0.044971,0.038922,0.044319,0.044841
+time_pretransfer
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.034285,0.031555,0.027414,0.045054,0.039008,0.044402,0.044924
+time_ttfb
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.075787,0.070830,0.048162,0.098739,0.092841,0.098236,0.098638
+time_total
+avg:,median:,min:,max:,75%:,95%:,99%:
+0.085403,0.080726,0.057521,0.107577,0.103577,0.107292,0.107520
 ```

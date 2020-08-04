@@ -15,6 +15,22 @@ http3='n'
 bin_http3='/usr/local/src/curl/src/curl'
 library_path_http3='/usr/lib/x86_64-linux-gnu'
 ############################################################
+if [ "$curlruns" ]; then
+  total=$curlruns
+fi
+if [ "$ipv4" ]; then
+  force_ipv4='y'
+fi
+if [ "$h3" ]; then
+  http3='y'
+fi
+if [ "$bin_h3" ]; then
+  bin="$bin_h3"
+  bin_http3="$bin_h3"
+fi
+if [ "$lib_h3" ]; then
+  library_path_http3="$lib_h3"
+fi
 
 if [[ -f /usr/bin/yum && ! -f /usr/bin/datamash ]]; then
   yum -y -q install datamash >/dev/null 2>&1
