@@ -20,12 +20,12 @@ if [ "$curlruns" ]; then
 else
   total=$total
 fi
-if [ "$ipv4" ]; then
+if [ "$ipv4" == 1 ]; then
   force_ipv4='y'
 else
   force_ipv4=$force_ipv4
 fi
-if [ "$h3" ]; then
+if [ "$h3" == 1 ]; then
   http3='y'
 else
   http3=$http3
