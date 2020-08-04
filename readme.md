@@ -1021,7 +1021,7 @@ unset curlruns
 
 ## To set environment variables:
 
-example setting `h3=1`, `ipv4=1` and `curlruns=9` and `export bin_h3='/usr/local/src/curl/src/curl'` and `export lib_h3='/usr/lib/x86_64-linux-gnu'`
+example setting `h3=1`, `ipv4=1` and `curlruns=9` and `bin_h3='/usr/local/src/curl/src/curl'` and `lib_h3='/usr/lib/x86_64-linux-gnu'`
 
 ```
 export bin_h3='/usr/local/src/curl/src/curl'
