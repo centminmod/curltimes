@@ -10,6 +10,10 @@ dt=$(date +"%d%m%y-%H%M%S")
 # IPv4 / IPv6
 force_ipv4='n'
 
+# other settings
+connect_from_display='n'
+connect_from_log="/tmp/curltimes-connect-from.txt"
+
 # HTTP/3 curl
 http3='n'
 bin_http3='/usr/local/src/curl/src/curl'
@@ -232,7 +236,18 @@ curlrun() {
     # curl binary, libcurl does not support HTTP/3
     curlopts=""
   fi
-  curlinfo=$($bin ${curlip_opt}-Isvk${resolve_ip} $url $tlsmax $curlopts 2>&1 | egrep 'Connected to |SSL connection using|> user-agent:|HEAD / ' | sed -e 's|* SSL connection using ||' -e 's|> user-agent: ||' -e 's|> HEAD / ||' -e 's| \/ | |' -e 's|curl/|curl |' -e 's|^* ||' | sort -r)
+  if [[ "$connect_from_display" = [yY] ]]; then
+    if [ ! -f "$connect_from_log" ]; then
+      connect_from_info="Connected from $($bin -4s https://centminmod.com/getip/ --connect-timeout 2 | jq -r '"\(.city) \(.country) \(.continent) \(.data.asn) \(.data.description_short)"')\\\n"
+      # cache connect from info to save on excessive curl runs
+      echo "$connect_from_info" > "$connect_from_log"
+    elif [ -f "$connect_from_log" ]; then
+      connect_from_info=$(cat $connect_from_log)
+    fi
+  else
+    connect_from_info=
+  fi
+  curlinfo=$($bin ${curlip_opt}-Isvk${resolve_ip} $url $tlsmax $curlopts 2>&1 | egrep 'Connected to |SSL connection using|> user-agent:|HEAD / ' | sed -e 's|* SSL connection using ||' -e 's|> user-agent: ||' -e 's|> HEAD / ||' -e 's| \/ | |' -e 's|curl/|curl |' -e 's|^* ||' | sed -e "s|^Connected to|${connect_from_info}Connected to|"| sort -r)
   echo -e "$curlinfo\nSample Size: $total\n"
   if [[ "$mode" = 'csv-sum' ]]; then
     for ((n=0;n<total;n++))
