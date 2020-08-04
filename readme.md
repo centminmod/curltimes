@@ -43,31 +43,32 @@ json output with TLS 1.2 max
 curl 7.72.0-DEV
 TLSv1.2 ECDHE-ECDSA-AES128-GCM-SHA256
 HTTP/2
-Connected to servermanager.guide (2606:4700:10::6816:42fa) port 443 (#0)
+Connected to servermanager.guide (2606:4700:10::ac43:26be) port 443 (#0)
+Cloudflare proxied https://servermanager.guide
 Sample Size: 3
 
 DNS,Connect,SSL,Wait,TTFB,Total Time
 {
-        "time_dns":             0.002439,
-        "time_connect":         0.011056,
-        "time_appconnect":      0.035863,
-        "time_pretransfer":     0.035944,
-        "time_ttfb":            0.062574,
-        "time_total":           0.073078
+        "time_dns":             0.015699,
+        "time_connect":         0.024545,
+        "time_appconnect":      0.062394,
+        "time_pretransfer":     0.062475,
+        "time_ttfb":            0.094291,
+        "time_total":           0.103574
 }{
-        "time_dns":             0.014376,
-        "time_connect":         0.023067,
-        "time_appconnect":      0.048261,
-        "time_pretransfer":     0.048351,
-        "time_ttfb":            0.072806,
-        "time_total":           0.081537
+        "time_dns":             0.002299,
+        "time_connect":         0.013313,
+        "time_appconnect":      0.045032,
+        "time_pretransfer":     0.045112,
+        "time_ttfb":            0.069348,
+        "time_total":           0.080474
 }{
-        "time_dns":             0.002416,
-        "time_connect":         0.011125,
-        "time_appconnect":      0.038530,
-        "time_pretransfer":     0.038625,
-        "time_ttfb":            0.068724,
-        "time_total":           0.077622
+        "time_dns":             0.017739,
+        "time_connect":         0.026433,
+        "time_appconnect":      0.053973,
+        "time_pretransfer":     0.054058,
+        "time_ttfb":            0.083686,
+        "time_total":           0.093763
 }
 ```
 
@@ -79,30 +80,31 @@ curl 7.72.0-DEV
 TLSv1.3 TLS_AES_128_GCM_SHA256
 HTTP/2
 Connected to servermanager.guide (2606:4700:10::6816:42fa) port 443 (#0)
+Cloudflare proxied https://servermanager.guide
 Sample Size: 3
 
 DNS,Connect,SSL,Wait,TTFB,Total Time
 {
-        "time_dns":             0.002503,
-        "time_connect":         0.011196,
-        "time_appconnect":      0.028570,
-        "time_pretransfer":     0.028659,
-        "time_ttfb":            0.059981,
-        "time_total":           0.068726
+        "time_dns":             0.002447,
+        "time_connect":         0.011198,
+        "time_appconnect":      0.027511,
+        "time_pretransfer":     0.027593,
+        "time_ttfb":            0.064391,
+        "time_total":           0.073440
 }{
-        "time_dns":             0.002414,
-        "time_connect":         0.011099,
-        "time_appconnect":      0.029590,
-        "time_pretransfer":     0.029678,
-        "time_ttfb":            0.055797,
-        "time_total":           0.066787
+        "time_dns":             0.002405,
+        "time_connect":         0.013513,
+        "time_appconnect":      0.033980,
+        "time_pretransfer":     0.034065,
+        "time_ttfb":            0.073271,
+        "time_total":           0.084364
 }{
-        "time_dns":             0.002438,
-        "time_connect":         0.011156,
-        "time_appconnect":      0.026949,
-        "time_pretransfer":     0.027040,
-        "time_ttfb":            0.055696,
-        "time_total":           0.064554
+        "time_dns":             0.002346,
+        "time_connect":         0.011054,
+        "time_appconnect":      0.030559,
+        "time_pretransfer":     0.030656,
+        "time_ttfb":            0.084737,
+        "time_total":           0.093304
 }
 ```
 
@@ -114,6 +116,7 @@ curl 7.72.0-DEV
 TLSv1.2 ECDHE-ECDSA-AES128-GCM-SHA256
 HTTP/2
 Connected to servermanager.guide (2606:4700:10::ac43:26be) port 443 (#0)
+Cloudflare proxied https://servermanager.guide
 Sample Size: 3
 
 DNS,Connect,SSL,Wait,TTFB,Total Time
@@ -130,6 +133,7 @@ curl 7.72.0-DEV
 TLSv1.3 TLS_AES_128_GCM_SHA256
 HTTP/2
 Connected to servermanager.guide (2606:4700:10::ac43:26be) port 443 (#0)
+Cloudflare proxied https://servermanager.guide
 Sample Size: 3
 
 DNS,Connect,SSL,Wait,TTFB,Total Time
@@ -150,6 +154,7 @@ curl 7.72.0-DEV
 TLSv1.2 ECDHE-ECDSA-AES128-GCM-SHA256
 HTTP/2
 Connected to servermanager.guide (2606:4700:10::6816:42fa) port 443 (#0)
+Cloudflare proxied https://servermanager.guide
 Sample Size: 3
 
 0.015257,0.023983,0.049285,0.049374,0.071656,0.080435
@@ -233,6 +238,7 @@ curl 7.72.0-DEV
 TLSv1.3 TLS_AES_128_GCM_SHA256
 HTTP/2
 Connected to servermanager.guide (2606:4700:10::6816:43fa) port 443 (#0)
+Cloudflare proxied https://servermanager.guide
 Sample Size: 3
 
 0.002545,0.011174,0.029505,0.029594,0.055961,0.06396
@@ -326,6 +332,7 @@ time diff -u <(./curltimes.sh csv-sum https://$domain) <(./curltimes.sh csv-max-
 +TLSv1.3 TLS_AES_128_GCM_SHA256
  HTTP/2
  Connected to servermanager.guide (2606:4700:10::6816:43fa) port 443 (#0)
+ Cloudflare proxied https://servermanager.guide
  Sample Size: 3
  
 -0.002346,0.01103,0.035427,0.035503,0.060286,0.069271
@@ -476,6 +483,7 @@ Then running `csv-max-sum` option would display curl HTTP/3 binary timings but t
 curl 7.72.0-DEV
 HTTP/3
 Connected to servermanager.guide (2606:4700:10::ac43:26be) port 443 (#0)
+Cloudflare proxied https://servermanager.guide
 Sample Size: 3
 
 0.002418,0.015616,0,0.015679,0.043934,0.055905
@@ -580,6 +588,7 @@ diff -u curl-http2-tls13.txt curl-http3-quic.txt
 -Connected to servermanager.guide (2606:4700:10::6816:42fa) port 443 (#0)
 +HTTP/3
 +Connected to servermanager.guide (2606:4700:10::6816:43fa) port 443 (#0)
+ Cloudflare proxied https://servermanager.guide
  Sample Size: 3
  
 -0.002326,0.010946,0.027514,0.027596,0.064009,0.072842
@@ -724,6 +733,7 @@ domain=servermanager.guide
  HTTP/2
 -Connected to servermanager.guide (2606:4700:10::ac43:26be) port 443 (#0)
 +Connected to servermanager.guide (2606:4700:10::6816:42fa) port 443 (#0)
+ Cloudflare proxied https://servermanager.guide
  Sample Size: 3
 
        time_dns
@@ -774,6 +784,7 @@ curl 7.72.0-DEV
 TLSv1.3 TLS_AES_128_GCM_SHA256
 HTTP/2
 Connected to servermanager.guide (2606:4700:10::ac43:26be) port 443 (#0)
+Cloudflare proxied https://servermanager.guide
 Sample Size: 3
 
 0.002388,0.011001,0.027721,0.027805,0.055312,0.063218
@@ -859,6 +870,7 @@ domain=servermanager.guide
 +TLSv1.3 TLS_AES_128_GCM_SHA256
  HTTP/2
  Connected to servermanager.guide (2606:4700:10::ac43:26be) port 443 (#0)
+ Cloudflare proxied https://servermanager.guide
  Sample Size: 3
  
 
@@ -904,6 +916,7 @@ dig +short AAAA servermanager.guide | while read ip; do echo; domain=servermanag
 +TLSv1.3 TLS_AES_128_GCM_SHA256
  HTTP/2
  Connected to servermanager.guide (2606:4700:10::6816:42fa) port 443 (#0)
+ Cloudflare proxied https://servermanager.guide
  Sample Size: 33
  
 
@@ -937,6 +950,7 @@ tls13: 0.069042,0.067686,0.055383,0.096125,0.074209,0.085111,0.093838
 +TLSv1.3 TLS_AES_128_GCM_SHA256
  HTTP/2
  Connected to servermanager.guide (2606:4700:10::6816:43fa) port 443 (#0)
+ Cloudflare proxied https://servermanager.guide
  Sample Size: 33
  
 
@@ -970,6 +984,7 @@ tls13: 0.063297,0.061701,0.054232,0.084139,0.066266,0.078864,0.083847
 +TLSv1.3 TLS_AES_128_GCM_SHA256
  HTTP/2
  Connected to servermanager.guide (2606:4700:10::ac43:26be) port 443 (#0)
+ Cloudflare proxied https://servermanager.guide
  Sample Size: 33
  
 

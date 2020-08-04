@@ -223,6 +223,7 @@ curlrun() {
   resolveip=$4
   tlsmax="--tls-max $tls"
   datalog="/tmp/curltimes-${mode}-${dt}.txt"
+  curlinforaw_log="/tmp/curltimes-curlinfo-raw-${dt}.txt"
   if [[ "$resolveip" ]]; then
     resolve_ip=" --resolve ${urlonly}:443:${resolveip}"
   else
@@ -247,8 +248,22 @@ curlrun() {
   else
     connect_from_info=
   fi
-  curlinfo=$($bin ${curlip_opt}-Isvk${resolve_ip} $url $tlsmax $curlopts 2>&1 | egrep 'Connected to |SSL connection using|> user-agent:|HEAD / ' | sed -e 's|* SSL connection using ||' -e 's|> user-agent: ||' -e 's|> HEAD / ||' -e 's| \/ | |' -e 's|curl/|curl |' -e 's|^* ||' | sed -e "s|^Connected to|${connect_from_info}Connected to|"| sort -r)
-  echo -e "$curlinfo\nSample Size: $total\n"
+  curlinfo_raw=$($bin ${curlip_opt}-Isvk${resolve_ip} $url $tlsmax $curlopts 2>&1)
+  curlinfo=$(echo "$curlinfo_raw" | egrep 'Connected to |SSL connection using|> user-agent:|HEAD / ' | sed -e 's|* SSL connection using ||' -e 's|> user-agent: ||' -e 's|> HEAD / ||' -e 's| \/ | |' -e 's|curl/|curl |' -e 's|^* ||' | sed -e "s|^Connected to|${connect_from_info}Connected to|"| sort -r)
+  echo "$curlinfo_raw" > "$curlinforaw_log"
+  curl_info=$(cat $curlinforaw_log)
+  if [[ "$(cat $curlinforaw_log 2>&1 | grep -o 'fastly-backend-name' | uniq)" = 'fastly-backend-name' ]]; then
+    cdnid="\nFastly proxied $url"
+  elif [[ "$(cat $curlinforaw_log 2>&1 | grep -o 'x-sucuri-id' | uniq)" = 'x-sucuri-id' ]]; then
+    cdnid="\nSucuri proxied $url"
+  elif [[ "$(cat $curlinforaw_log 2>&1 | grep -o 'cf-request-id' | uniq)" = 'cf-request-id' ]]; then
+    cdnid="\nCloudflare proxied $url"
+  elif [[ "$(cat $curlinforaw_log 2>&1 | grep -o 'Incapsula' | uniq)" = 'Incapsula' ]]; then
+    cdnid="\nIncapsula proxied $url"
+  else
+    cdnid=
+  fi
+  echo -e "${curlinfo}${cdnid}\nSample Size: ${total}\n"
   if [[ "$mode" = 'csv-sum' ]]; then
     for ((n=0;n<total;n++))
     do
@@ -279,6 +294,7 @@ curlrun() {
       sleep 0.3 #space the timings out slightly
     done | tee "$datalog"
   fi
+  rm -f "$curlinforaw_log"
 }
 
 compared() {
