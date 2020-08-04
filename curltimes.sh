@@ -197,7 +197,7 @@ curlrun() {
   else
     resolve_ip=
   fi
-  checkhttp3=$($bin --http3 ${curlip_opt}${resolve_ip} -I $url $tlsmax --connect-timeout 2 >/dev/null 2>&1; echo $?)
+  checkhttp3=$($bin --http3 ${curlip_opt}${resolve_ip} -sIk $url $tlsmax --connect-timeout 2 >/dev/null 2>&1; echo $?)
   if [[ "$http3" = [yY] && "$checkhttp3" -eq '0' ]]; then
     # curl binary, libcurl supports HTTP/3
     curlopts='--http3'
@@ -250,7 +250,7 @@ compared() {
   else
     comp_resolve_ip=
   fi
-  check_tlsmax=$($bin --tlsv1.3 ${curlip_opt}${comp_resolve_ip} -I $url --connect-timeout 2 >/dev/null 2>&1; echo $?)
+  check_tlsmax=$($bin --tlsv1.3 ${curlip_opt}${comp_resolve_ip} -sIk $url --connect-timeout 2 >/dev/null 2>&1; echo $?)
   if [ "$check_tlsmax" -eq '0' ]; then
     tls2='tls12'
     tls3='tls13'
@@ -259,7 +259,7 @@ compared() {
     tls3='tls12'
   fi 
   diff -u <(curlrun csv-sum "$url" 1.2 "$comp_resolveip") <(curlrun csv-max-sum "$url" 1.3 "$comp_resolveip") > "$comparelog"
-  cat "$comparelog" | sed -n -e 4,10p
+  cat "$comparelog" | sed -n -e 4,10p | grep -v '^\-0'
   echo
   cat "$comparelog" | tail -24 | sed -e "s|-|$tls2: |" -e "s|+|$tls3: |" -e 's|avg:|      avg:|' -e 's|time_|      time_|g'
   rm -f "$comparelog"
