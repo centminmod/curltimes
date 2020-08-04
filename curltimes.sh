@@ -17,19 +17,30 @@ library_path_http3='/usr/lib/x86_64-linux-gnu'
 ############################################################
 if [ "$curlruns" ]; then
   total=$curlruns
+else
+  total=$total
 fi
 if [ "$ipv4" ]; then
   force_ipv4='y'
+else
+  force_ipv4=$force_ipv4
 fi
 if [ "$h3" ]; then
   http3='y'
+else
+  http3=$http3
 fi
 if [ "$bin_h3" ]; then
   bin="$bin_h3"
   bin_http3="$bin_h3"
+else
+  bin="$bin"
+  bin_http3="$bin_http3"
 fi
 if [ "$lib_h3" ]; then
   library_path_http3="$lib_h3"
+else
+  library_path_http3="$library_path_http3"
 fi
 
 if [[ -f /usr/bin/yum && ! -f /usr/bin/datamash ]]; then

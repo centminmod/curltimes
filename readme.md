@@ -1009,12 +1009,25 @@ tls13: 0.061540,0.061019,0.052092,0.074847,0.062104,0.069454,0.073440
 * `bin_h3` - set path to your curl HTTP/3 binary
 * `lib_h3` - set path to your curl HTTP/3 library directory
 
+## To unset/clear environment variables
+
+```
+unset bin_h3
+unset lib_h3
+unset h3
+unset ipv4
+unset curlruns
+```
+
+## To set environment variables:
+
 example setting `h3=1`, `ipv4=1` and `curlruns=9` and `export bin_h3='/usr/local/src/curl/src/curl'` and `export lib_h3='/usr/lib/x86_64-linux-gnu'`
 
 ```
 export bin_h3='/usr/local/src/curl/src/curl'
 export lib_h3='/usr/lib/x86_64-linux-gnu'
 export h3=1
+export ipv4=1
 export curlruns=9
 ./curltimes.sh csv-max-sum https://servermanager.guide                                
 curl 7.72.0-DEV
