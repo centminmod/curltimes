@@ -2,6 +2,7 @@
 ############################################################
 # https://nooshu.github.io/blog/2020/07/30/measuring-tls-13-ipv4-ipv6-performance/
 ############################################################
+ver=0.2
 total=3
 bin='/usr/bin/curl'
 #bin='/usr/local/src/curl/src/curl'
@@ -224,6 +225,7 @@ curlrun() {
   tlsmax="--tls-max $tls"
   datalog="/tmp/curltimes-${mode}-${dt}.txt"
   curlinforaw_log="/tmp/curltimes-curlinfo-raw-${dt}.txt"
+  curl_ver=$($bin -V 2>&1| head -n1 | xargs -n4)
   if [[ "$resolveip" ]]; then
     resolve_ip=" --resolve ${urlonly}:443:${resolveip}"
   else
