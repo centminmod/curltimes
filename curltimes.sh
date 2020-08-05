@@ -12,6 +12,7 @@ dt=$(date +"%d%m%y-%H%M%S")
 force_ipv4='n'
 
 # other settings
+spacetiming='0.3'
 connect_from_display='n'
 connect_from_log="/tmp/curltimes-connect-from.txt"
 
@@ -270,14 +271,14 @@ curlrun() {
     for ((n=0;n<total;n++))
     do
       $bin ${curlip_opt}${resolve_ip} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
-      sleep 0.3 #space the timings out slightly
+      sleep $spacetiming #space the timings out slightly
     done | jq -r '[.[]] | @csv' | tee "$datalog"
     processlog y
   elif [[ "$mode" = 'csv-max-sum' ]]; then
     for ((n=0;n<total;n++))
     do
       $bin ${curlip_opt}${resolve_ip} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
-      sleep 0.3 #space the timings out slightly
+      sleep $spacetiming #space the timings out slightly
     done | jq -r '[.[]] | @csv' | tee "$datalog"
     processlog y
   elif [[ "$mode" = 'csv' ]]; then
@@ -285,7 +286,7 @@ curlrun() {
     for ((n=0;n<total;n++))
     do
       $bin ${curlip_opt}${resolve_ip} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
-      sleep 0.3 #space the timings out slightly
+      sleep $spacetiming #space the timings out slightly
     done | jq -r '[.[]] | @csv' | tee "$datalog"
     processlog
   else
@@ -293,7 +294,7 @@ curlrun() {
     for ((n=0;n<total;n++))
     do
       $bin ${curlip_opt}${resolve_ip} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
-      sleep 0.3 #space the timings out slightly
+      sleep $spacetiming #space the timings out slightly
     done | tee "$datalog"
   fi
   rm -f "$curlinforaw_log"
