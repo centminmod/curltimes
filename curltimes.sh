@@ -2,7 +2,7 @@
 ############################################################
 # https://nooshu.github.io/blog/2020/07/30/measuring-tls-13-ipv4-ipv6-performance/
 ############################################################
-ver=0.2
+ver=0.3
 total=3
 bin='/usr/bin/curl'
 #bin='/usr/local/src/curl/src/curl'
@@ -14,7 +14,6 @@ force_ipv4='n'
 # other settings
 spacetiming='0.3'
 connect_from_display='n'
-connect_from_log="/tmp/curltimes-connect-from.txt"
 
 # HTTP/3 curl
 http3='n'
@@ -28,8 +27,10 @@ else
 fi
 if [ "$ipv4" == 1 ]; then
   force_ipv4='y'
+  mode_ipv4="-$ipv4"
 else
   force_ipv4=$force_ipv4
+  mode_ipv4=
 fi
 if [ "$h3" == 1 ]; then
   http3='y'
@@ -224,8 +225,9 @@ curlrun() {
   tls=$3
   resolveip=$4
   tlsmax="--tls-max $tls"
-  datalog="/tmp/curltimes-${mode}-${dt}.txt"
-  curlinforaw_log="/tmp/curltimes-curlinfo-raw-${dt}.txt"
+  datalog="/tmp/curltimes-${mode}${mode_ipv4}-${dt}.txt"
+  connect_from_log="/tmp/curltimes-connect-from${mode_ipv4}.txt"
+  curlinforaw_log="/tmp/curltimes-curlinfo-raw${mode_ipv4}-${dt}.txt"
   curl_ver=$($bin -V 2>&1| head -n1 | xargs -n4)
   if [[ "$resolveip" ]]; then
     resolve_ip=" --resolve ${urlonly}:443:${resolveip}"
@@ -304,7 +306,7 @@ compared() {
   url=$1
   urlonly=$(echo ${url} | sed -e 's|https:\/\/||')
   comp_resolveip=$2
-  comparelog="/tmp/curltimes-compared-${dt}.txt"
+  comparelog="/tmp/curltimes-compared${mode_ipv4}-${dt}.txt"
   comp_tlsmax="--tls-max 1.3"
   if [[ "$comp_resolveip" ]]; then
     comp_resolve_ip=" --resolve ${urlonly}:443:${comp_resolveip}"
