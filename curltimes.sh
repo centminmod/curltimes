@@ -2,7 +2,7 @@
 ############################################################
 # https://nooshu.github.io/blog/2020/07/30/measuring-tls-13-ipv4-ipv6-performance/
 ############################################################
-ver=0.3
+ver=0.4
 total=3
 bin='/usr/bin/curl'
 #bin='/usr/local/src/curl/src/curl'
@@ -14,6 +14,7 @@ force_ipv4='n'
 # other settings
 spacetiming='0.3'
 connect_from_display='n'
+curl_display_sizes='n'
 
 # HTTP/3 curl
 http3='n'
@@ -242,6 +243,13 @@ curlrun() {
     # curl binary, libcurl does not support HTTP/3
     curlopts=""
   fi
+  if [[ "$curl_display_sizes" = [yY] ]]; then
+    getcompress_size=$($bin ${curlip_opt}${resolve_ip} -sk $url $tlsmax $curlopts --connect-timeout 2 --compressed -w "\\nCompressed header: %{size_header} bytes download: %{size_download} bytes" -o /dev/null)
+    getnocompress_size=$($bin ${curlip_opt}${resolve_ip} -sk $url $tlsmax $curlopts --connect-timeout 2 -w "\\nUncompressed header: %{size_header} bytes download: %{size_download} bytes\\n" -o /dev/null)
+  else
+    getcompress_size=
+    getnocompress_size=
+  fi
   if [[ "$connect_from_display" = [yY] ]]; then
     if [ ! -f "$connect_from_log" ]; then
       connect_from_info="Connected from $($bin -4s https://centminmod.com/getip/ --connect-timeout 2 | jq -r '"\(.city) \(.country) \(.continent) \(.data.asn) \(.data.description_short)"')\\\n"
@@ -268,7 +276,7 @@ curlrun() {
   else
     cdnid=
   fi
-  echo -e "${curlinfo}${cdnid}\nSample Size: ${total}\n"
+  echo -e "${curlinfo}${cdnid}${getcompress_size}${getnocompress_size}\nSample Size: ${total}\n"
   if [[ "$mode" = 'csv-sum' ]]; then
     for ((n=0;n<total;n++))
     do
@@ -322,7 +330,7 @@ compared() {
     tls3='tls12'
   fi 
   diff -u <(curlrun csv-sum "$url" 1.2 "$comp_resolveip") <(curlrun csv-max-sum "$url" 1.3 "$comp_resolveip") > "$comparelog"
-  cat "$comparelog" | sed -n -e 4,10p | grep -v '^\-0'
+  cat "$comparelog" | sed -n -e 4,10p | egrep -v '^\-0|@@ '
   echo
   cat "$comparelog" | tail -24 | sed -e "s|-|$tls2: |" -e "s|+|$tls3: |" -e 's|avg:|      avg:|' -e 's|time_|      time_|g'
   rm -f "$comparelog"
