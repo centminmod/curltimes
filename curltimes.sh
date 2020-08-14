@@ -2,11 +2,27 @@
 ############################################################
 # https://nooshu.github.io/blog/2020/07/30/measuring-tls-13-ipv4-ipv6-performance/
 ############################################################
-ver=0.4
+ver=0.5
 total=3
 bin='/usr/bin/curl'
 #bin='/usr/local/src/curl/src/curl'
 dt=$(date +"%d%m%y-%H%M%S")
+
+# curl custom ciphers
+curl_custom_ciphers='n'
+# tlsv1.2 cipher choices from
+# ECDHE-ECDSA-AES128-GCM-SHA256
+# ECDHE-ECDSA-AES256-GCM-SHA384
+# ECDHE-RSA-AES128-GCM-SHA256
+# ECDHE-RSA-AES256-GCM-SHA384
+# order is from right to left
+curl_ciphers_tls12='ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256'
+# tlsv1.3 cipher choices from
+# TLS_AES_128_GCM_SHA256
+# TLS_AES_256_GCM_SHA384
+# TLS_CHACHA20_POLY1305_SHA256
+# order is from left to right
+curl_ciphers_tls13='TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256'
 
 # IPv4 / IPv6
 force_ipv4='n'
@@ -49,6 +65,13 @@ if [ "$lib_h3" ]; then
   library_path_http3="$lib_h3"
 else
   library_path_http3="$library_path_http3"
+fi
+if [ "$custom_ciphers" == 1 ]; then
+  curl_custom_ciphers='y'
+elif [ "$custom_ciphers" == 0 ]; then
+  curl_custom_ciphers='n'
+else
+  curl_custom_ciphers=$curl_custom_ciphers
 fi
 
 if [[ -f /usr/bin/yum && ! -f /usr/bin/datamash ]]; then
@@ -219,6 +242,17 @@ processlog() {
   rm -f "$datalog"
 }
 
+ciphercheck() {
+  tlschk=$1
+  if [[ "$curl_custom_ciphers" = [yY] && "$tlschk" = '1.2' ]]; then
+    ciper_list=" --ciphers $curl_ciphers_tls12"
+  elif [[ "$curl_custom_ciphers" = [yY] && "$tlschk" = '1.3' ]]; then
+    ciper_list=" --tls13-ciphers $curl_ciphers_tls13"
+  elif [[ "$curl_custom_ciphers" != [yY] ]]; then
+    ciper_list=
+  fi
+}
+
 curlrun() {
   mode=$1
   url=$2
@@ -226,16 +260,17 @@ curlrun() {
   tls=$3
   resolveip=$4
   tlsmax="--tls-max $tls"
-  datalog="/tmp/curltimes-${mode}${mode_ipv4}-${dt}.txt"
-  connect_from_log="/tmp/curltimes-connect-from${mode_ipv4}.txt"
-  curlinforaw_log="/tmp/curltimes-curlinfo-raw${mode_ipv4}-${dt}.txt"
+  datalog="/tmp/curltimes-${mode}${mode_ipv4}${curl_custom_ciphers}-${dt}.txt"
+  connect_from_log="/tmp/curltimes-connect-from${mode_ipv4}${curl_custom_ciphers}.txt"
+  curlinforaw_log="/tmp/curltimes-curlinfo-raw${mode_ipv4}${curl_custom_ciphers}-${dt}.txt"
   curl_ver=$($bin -V 2>&1| head -n1 | xargs -n4)
   if [[ "$resolveip" ]]; then
     resolve_ip=" --resolve ${urlonly}:443:${resolveip}"
   else
     resolve_ip=
   fi
-  checkhttp3=$($bin --http3 ${curlip_opt}${resolve_ip} -sIk $url $tlsmax --connect-timeout 2 >/dev/null 2>&1; echo $?)
+  ciphercheck "$tls"
+  checkhttp3=$($bin --http3 ${curlip_opt}${resolve_ip}${ciper_list} -sIk $url $tlsmax --connect-timeout 2 >/dev/null 2>&1; echo $?)
   if [[ "$http3" = [yY] && "$checkhttp3" -eq '0' ]]; then
     # curl binary, libcurl supports HTTP/3
     curlopts='--http3'
@@ -244,8 +279,8 @@ curlrun() {
     curlopts=""
   fi
   if [[ "$curl_display_sizes" = [yY] ]]; then
-    getcompress_size=$($bin ${curlip_opt}${resolve_ip} -sk $url $tlsmax $curlopts --connect-timeout 2 --compressed -w "\\nCompressed header: %{size_header} bytes download: %{size_download} bytes" -o /dev/null)
-    getnocompress_size=$($bin ${curlip_opt}${resolve_ip} -sk $url $tlsmax $curlopts --connect-timeout 2 -w "\\nUncompressed header: %{size_header} bytes download: %{size_download} bytes\\n" -o /dev/null)
+    getcompress_size=$($bin ${curlip_opt}${resolve_ip}${ciper_list} -sk $url $tlsmax $curlopts --connect-timeout 2 --compressed -w "\\nCompressed header: %{size_header} bytes download: %{size_download} bytes" -o /dev/null)
+    getnocompress_size=$($bin ${curlip_opt}${resolve_ip}${ciper_list} -sk $url $tlsmax $curlopts --connect-timeout 2 -w "\\nUncompressed header: %{size_header} bytes download: %{size_download} bytes\\n" -o /dev/null)
   else
     getcompress_size=
     getnocompress_size=
@@ -261,7 +296,7 @@ curlrun() {
   else
     connect_from_info=
   fi
-  curlinfo_raw=$($bin ${curlip_opt}-Isvk${resolve_ip} $url $tlsmax $curlopts 2>&1)
+  curlinfo_raw=$($bin ${curlip_opt}-Isvk${resolve_ip}${ciper_list} $url $tlsmax $curlopts 2>&1)
   curlinfo=$(echo "$curlinfo_raw" | egrep 'Connected to |SSL connection using|> user-agent:|HEAD / ' | sed -e 's|* SSL connection using ||' -e 's|> user-agent: ||' -e 's|> HEAD / ||' -e 's| \/ | |' -e 's|curl/|curl |' -e 's|^* ||' | sed -e "s|^Connected to|${connect_from_info}Connected to|"| sort -r)
   echo "$curlinfo_raw" > "$curlinforaw_log"
   curl_info=$(cat $curlinforaw_log)
@@ -280,14 +315,14 @@ curlrun() {
   if [[ "$mode" = 'csv-sum' ]]; then
     for ((n=0;n<total;n++))
     do
-      $bin ${curlip_opt}${resolve_ip} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
+      $bin ${curlip_opt}${resolve_ip}${ciper_list} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
       sleep $spacetiming #space the timings out slightly
     done | jq -r '[.[]] | @csv' | tee "$datalog"
     processlog y
   elif [[ "$mode" = 'csv-max-sum' ]]; then
     for ((n=0;n<total;n++))
     do
-      $bin ${curlip_opt}${resolve_ip} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
+      $bin ${curlip_opt}${resolve_ip}${ciper_list} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
       sleep $spacetiming #space the timings out slightly
     done | jq -r '[.[]] | @csv' | tee "$datalog"
     processlog y
@@ -295,7 +330,7 @@ curlrun() {
     header
     for ((n=0;n<total;n++))
     do
-      $bin ${curlip_opt}${resolve_ip} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
+      $bin ${curlip_opt}${resolve_ip}${ciper_list} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
       sleep $spacetiming #space the timings out slightly
     done | jq -r '[.[]] | @csv' | tee "$datalog"
     processlog
@@ -303,7 +338,7 @@ curlrun() {
     header
     for ((n=0;n<total;n++))
     do
-      $bin ${curlip_opt}${resolve_ip} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
+      $bin ${curlip_opt}${resolve_ip}${ciper_list} -w "$curl_format" -k --compressed -s -o /dev/null "$url" $tlsmax $curlopts
       sleep $spacetiming #space the timings out slightly
     done | tee "$datalog"
   fi
@@ -314,7 +349,7 @@ compared() {
   url=$1
   urlonly=$(echo ${url} | sed -e 's|https:\/\/||')
   comp_resolveip=$2
-  comparelog="/tmp/curltimes-compared${mode_ipv4}-${dt}.txt"
+  comparelog="/tmp/curltimes-compared${mode_ipv4}${curl_custom_ciphers}-${dt}.txt"
   comp_tlsmax="--tls-max 1.3"
   if [[ "$comp_resolveip" ]]; then
     comp_resolve_ip=" --resolve ${urlonly}:443:${comp_resolveip}"

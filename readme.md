@@ -1023,6 +1023,7 @@ tls13: 0.061540,0.061019,0.052092,0.074847,0.062104,0.069454,0.073440
 * `h3=1` - enables HTTP/3 for `json`, `json-max`, `csv`, `csv-sum`, `csv-max`, `csv-max-sum` options but not supported in `compare` mode as TLSv1.2/TLSv1.3 are not used as HTTP/3 is over a QUIC connection. HTTP/3 mode only works once you have edited curl binary log and library paths as outlined [here](https://github.com/centminmod/curltimes#curl-http3-support).
 * `bin_h3` - set path to your curl HTTP/3 binary
 * `lib_h3` - set path to your curl HTTP/3 library directory
+* `custom_ciphers=1` - enables use of custom cipher preferences used by curl via `--ciphers` flag for TLSv1.2 and `--tls13-ciphers` flag for TLSv1.3 via curl cipher preferences defined in 2 variables - `curl_ciphers_tls12='ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256'` (ordered right to left) and `curl_ciphers_tls13='TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256'` (ordered left to right).
 
 ## To unset/clear environment variables
 
@@ -1032,9 +1033,146 @@ unset lib_h3
 unset h3
 unset ipv4
 unset curlruns
+unset custom_ciphers
 ```
 
 ## To set environment variables:
+
+### custom ciphers
+
+Compare TLSv1.2 vs TLSv1.3 on Ubuntu 20.04.1 LTS's curl v7.68 with native curl ciphers. Notice TLSv1.2 curl 7.68 natively uses `ECDHE-ECDSA-CHACHA20-POLY1305` and TLSv1.3 uses `TLS_AES_256_GCM_SHA384`
+
+```
+export custom_ciphers=0; ./curltimes.sh compare https://servermanager.guide 
+-TLSv1.2 ECDHE-ECDSA-CHACHA20-POLY1305
++TLSv1.3 TLS_AES_256_GCM_SHA384
+ HTTP/2
+ curl 7.68.0
+ Connected to servermanager.guide (104.22.66.250) port 443 (#0)
+ Cloudflare proxied https://servermanager.guide
+ Sample Size: 3
+
+       time_dns
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.006002,0.005802,0.001994,0.010209,0.008006,0.009768,0.010121
+tls13: 0.008544,0.005324,0.001612,0.018696,0.012010,0.017359,0.018429
+       time_connect
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.008041,0.007807,0.004117,0.012198,0.010002,0.011759,0.012110
+tls13: 0.010495,0.007277,0.003518,0.020689,0.013983,0.019348,0.020421
+       time_appconnect
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.054065,0.045499,0.041126,0.075569,0.060534,0.072562,0.074968
+tls13: 0.046345,0.035228,0.028690,0.075118,0.055173,0.071129,0.074320
+       time_pretransfer
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.054320,0.045799,0.041353,0.075809,0.060804,0.072808,0.075209
+tls13: 0.046603,0.035526,0.028947,0.075337,0.055431,0.071356,0.074541
+       time_ttfb
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.088164,0.078886,0.073939,0.111667,0.095276,0.108389,0.111011
+tls13: 0.082943,0.073260,0.069501,0.106068,0.089664,0.102787,0.105412
+       time_total
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.096051,0.085332,0.081077,0.121745,0.103539,0.118104,0.121017
+tls13: 0.092683,0.081521,0.077531,0.118996,0.100259,0.115248,0.118246
+```
+
+versus compare TLSv1.2 vs TLSv1.3 on Ubuntu 20.04.1 LTS's curl v7.68 with custom curl ciphers. Notice with `custom_ciphers=1` environment variable enabled, TLSv1.2 curl 7.68 uses `ECDHE-ECDSA-AES128-GCM-SHA256` and TLSv1.3 uses `TLS_AES_128_GCM_SHA256`
+
+```
+export custom_ciphers=1; ./curltimes.sh compare https://servermanager.guide
+-TLSv1.2 ECDHE-ECDSA-AES128-GCM-SHA256
++TLSv1.3 TLS_AES_128_GCM_SHA256
+ HTTP/2
+ curl 7.68.0
+ Connected to servermanager.guide (104.22.66.250) port 443 (#0)
+ Cloudflare proxied https://servermanager.guide
+ Sample Size: 3
+
+       time_dns
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.003613,0.001637,0.001623,0.007578,0.004607,0.006984,0.007459
+tls13: 0.003283,0.002643,0.002293,0.004913,0.003778,0.004686,0.004868
+       time_connect
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.005418,0.003617,0.003602,0.009035,0.006326,0.008493,0.008927
+tls13: 0.005273,0.004694,0.004222,0.006902,0.005798,0.006681,0.006858
+       time_appconnect
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.042692,0.030561,0.027277,0.070238,0.050400,0.066270,0.069444
+tls13: 0.050650,0.044449,0.037568,0.069934,0.057192,0.067385,0.069424
+       time_pretransfer
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.042925,0.030787,0.027507,0.070481,0.050634,0.066512,0.069687
+tls13: 0.051616,0.046902,0.037776,0.070171,0.058537,0.067844,0.069706
+       time_ttfb
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.072727,0.060584,0.049837,0.107761,0.084172,0.103043,0.106817
+tls13: 0.086993,0.087799,0.070482,0.102697,0.095248,0.101207,0.102399
+       time_total
+       avg:,median:,min:,max:,75%:,95%:,99%:
+tls12: 0.080906,0.064812,0.059272,0.118635,0.091723,0.113253,0.117559
+tls13: 0.095742,0.092309,0.082541,0.112377,0.102343,0.110370,0.111976
+```
+
+### Diff Compare Custom SSL Ciphers
+
+Compare Ubuntu 20.04.1 LTS's curl 7.68 native TLSv1.2 & TLSv1.3 ciphers with custom ciphers with curl resolved to same IP
+
+```
+diff -u <(export custom_ciphers=0; ./curltimes.sh compare https://servermanager.guide/ 104.22.66.250) <(export custom_ciphers=1; ./curltimes.sh compare https://servermanager.guide/ 104.22.66.250)
+--- /dev/fd/63  2020-08-14 23:46:01.977813329 +0000
++++ /dev/fd/62  2020-08-14 23:46:01.977813329 +0000
+@@ -1,5 +1,5 @@
+--TLSv1.2 ECDHE-ECDSA-CHACHA20-POLY1305
+-+TLSv1.3 TLS_AES_256_GCM_SHA384
++-TLSv1.2 ECDHE-ECDSA-AES128-GCM-SHA256
+++TLSv1.3 TLS_AES_128_GCM_SHA256
+  HTTP/2
+  curl 7.68.0
+  Connected to servermanager.guide (104.22.66.250) port 443 (#0)
+@@ -8,25 +8,25 @@
+ 
+        time_dns
+        avg:,median:,min:,max:,75%:,95%:,99%:
+-tls12: 0.011205,0.004589,0.003083,0.025942,0.015265,0.023807,0.025515
+-tls13: 0.004012,0.004849,0.001657,0.005529,0.005189,0.005461,0.005515
++tls12: 0.011578,0.008823,0.004229,0.021681,0.015252,0.020395,0.021424
++tls13: 0.006238,0.006474,0.004226,0.008013,0.007244,0.007859,0.007982
+        time_connect
+        avg:,median:,min:,max:,75%:,95%:,99%:
+-tls12: 0.014815,0.009951,0.006515,0.027978,0.018965,0.026175,0.027617
+-tls13: 0.006937,0.006957,0.003133,0.010721,0.008839,0.010345,0.010646
++tls12: 0.013304,0.010206,0.006130,0.023575,0.016890,0.022238,0.023308
++tls13: 0.008224,0.008406,0.006310,0.009955,0.009180,0.009800,0.009924
+        time_appconnect
+        avg:,median:,min:,max:,75%:,95%:,99%:
+-tls12: 0.096528,0.090889,0.048101,0.150595,0.120742,0.144624,0.149401
+-tls13: 0.073811,0.080793,0.020515,0.120126,0.100460,0.116193,0.119339
++tls12: 0.083564,0.064394,0.046253,0.140044,0.102219,0.132479,0.138531
++tls13: 0.069499,0.054430,0.053008,0.101059,0.077745,0.096396,0.100126
+        time_pretransfer
+        avg:,median:,min:,max:,75%:,95%:,99%:
+-tls12: 0.096752,0.091098,0.048339,0.150818,0.120958,0.144846,0.149624
+-tls13: 0.074028,0.081004,0.020730,0.120351,0.100678,0.116416,0.119564
++tls12: 0.083794,0.064604,0.046472,0.140307,0.102456,0.132737,0.138793
++tls13: 0.069718,0.054643,0.053233,0.101277,0.077960,0.096614,0.100344
+        time_ttfb
+        avg:,median:,min:,max:,75%:,95%:,99%:
+-tls12: 0.145099,0.170080,0.086449,0.178767,0.174423,0.177898,0.178593
+-tls13: 0.143531,0.152353,0.105358,0.172883,0.162618,0.170830,0.172472
++tls12: 0.126950,0.110409,0.093734,0.176706,0.143557,0.170076,0.175380
++tls13: 0.115679,0.100193,0.096733,0.150110,0.125151,0.145118,0.149112
+        time_total
+        avg:,median:,min:,max:,75%:,95%:,99%:
+-tls12: 0.156260,0.182053,0.093776,0.192951,0.187502,0.191861,0.192733
+-tls13: 0.151158,0.159049,0.114568,0.179858,0.169453,0.177777,0.179442
++tls12: 0.137379,0.124460,0.101905,0.185772,0.155116,0.179641,0.184546
++tls13: 0.128206,0.110756,0.110158,0.163703,0.137230,0.158408,0.162644
+```
+
+### IPv4 vs IPv6
 
 compare IPv4 vs IPv6 `curltimes.sh` runs 
 
