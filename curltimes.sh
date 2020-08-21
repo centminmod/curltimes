@@ -287,7 +287,8 @@ curlrun() {
   fi
   if [[ "$connect_from_display" = [yY] ]]; then
     if [ ! -f "$connect_from_log" ]; then
-      connect_from_info="Connected from $($bin -4s https://centminmod.com/getip/ --connect-timeout 2 | jq -r '"\(.city) \(.country) \(.continent) \(.data.asn) \(.data.description_short)"')\\\n"
+      # connect_from_info="Connected from $($bin -4s https://centminmod.com/getip/ --connect-timeout 2 | jq -r '"\(.city) \(.country) \(.continent) \(.data.asn) \(.data.description_short)"')\\\n"
+      connect_from_info="Connected from $($bin -4s https://centminmod.com/getip/ --connect-timeout 2 | jq -r '"\(.city) \(.country) \(.continent) \(.data.resource) \(.data.holder)"')\\\n"
       # cache connect from info to save on excessive curl runs
       echo "$connect_from_info" > "$connect_from_log"
     elif [ -f "$connect_from_log" ]; then
