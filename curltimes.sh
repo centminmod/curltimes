@@ -2,7 +2,7 @@
 ############################################################
 # https://nooshu.github.io/blog/2020/07/30/measuring-tls-13-ipv4-ipv6-performance/
 ############################################################
-ver=0.5
+ver=0.6
 total=3
 bin='/usr/bin/curl'
 #bin='/usr/local/src/curl/src/curl'
@@ -260,9 +260,10 @@ curlrun() {
   tls=$3
   resolveip=$4
   tlsmax="--tls-max $tls"
-  datalog="/tmp/curltimes-${mode}${mode_ipv4}${curl_custom_ciphers}-${dt}.txt"
-  connect_from_log="/tmp/curltimes-connect-from${mode_ipv4}${curl_custom_ciphers}.txt"
-  curlinforaw_log="/tmp/curltimes-curlinfo-raw${mode_ipv4}${curl_custom_ciphers}-${dt}.txt"
+  urlhash=$(echo "$urlonly"| md5sum | awk '{print $1}')
+  datalog="/tmp/curltimes-${mode}${mode_ipv4}${urlhash}${curl_custom_ciphers}-${dt}.txt"
+  connect_from_log="/tmp/curltimes-connect-from${mode_ipv4}${urlhash}${curl_custom_ciphers}.txt"
+  curlinforaw_log="/tmp/curltimes-curlinfo-raw${mode_ipv4}${urlhash}${curl_custom_ciphers}-${dt}.txt"
   curl_ver=$($bin -V 2>&1| head -n1 | xargs -n4)
   if [[ "$resolveip" ]]; then
     resolve_ip=" --resolve ${urlonly}:443:${resolveip}"
@@ -349,8 +350,9 @@ curlrun() {
 compared() {
   url=$1
   urlonly=$(echo ${url} | sed -e 's|https:\/\/||')
+  urlhash=$(echo "$urlonly"| md5sum | awk '{print $1}')
   comp_resolveip=$2
-  comparelog="/tmp/curltimes-compared${mode_ipv4}${curl_custom_ciphers}-${dt}.txt"
+  comparelog="/tmp/curltimes-compared${mode_ipv4}${urlhash}${curl_custom_ciphers}-${dt}.txt"
   comp_tlsmax="--tls-max 1.3"
   if [[ "$comp_resolveip" ]]; then
     comp_resolve_ip=" --resolve ${urlonly}:443:${comp_resolveip}"
@@ -366,7 +368,7 @@ compared() {
     tls3='tls12'
   fi 
   diff -u <(curlrun csv-sum "$url" 1.2 "$comp_resolveip") <(curlrun csv-max-sum "$url" 1.3 "$comp_resolveip") > "$comparelog"
-  cat "$comparelog" | sed -n -e 4,10p | egrep -v '^\-0|@@ '
+  cat "$comparelog" | sed -n -e 4,10p | egrep -v '^\-0|^\-1|^\-2|^\-3|^\-4|^\+0|^\+1|^\+2|^\+3|^\+4|@@ '
   echo
   cat "$comparelog" | tail -24 | sed -e "s|-|$tls2: |" -e "s|+|$tls3: |" -e 's|avg:|      avg:|' -e 's|time_|      time_|g'
   rm -f "$comparelog"
