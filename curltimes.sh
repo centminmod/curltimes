@@ -306,7 +306,7 @@ curlrun() {
     cdnid="\nFastly proxied $url"
   elif [[ "$(cat $curlinforaw_log 2>&1 | grep -o 'x-sucuri-id' | uniq)" = 'x-sucuri-id' ]]; then
     cdnid="\nSucuri proxied $url"
-  elif [[ "$(cat $curlinforaw_log 2>&1 | grep -o 'cf-request-id' | uniq)" = 'cf-request-id' ]]; then
+  elif [[ "$(cat $curlinforaw_log 2>&1 | grep -o 'cf-ray' | uniq)" = 'cf-ray' ]]; then
     cdnid="\nCloudflare proxied $url"
   elif [[ "$(cat $curlinforaw_log 2>&1 | grep -o 'Incapsula' | uniq)" = 'Incapsula' ]]; then
     cdnid="\nIncapsula proxied $url"
